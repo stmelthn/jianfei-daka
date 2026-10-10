@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0b5d3b"/>
+<title>减肥群 · 计分</title>
+<style>
+:root{
+  --gold:#f5c542; --gold-d:#a8720a; --ink:#1c2329; --sub:#6b7a86;
+  --felt:#0b5d3b; --line:#e4e8ec;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--ink);
+  background:radial-gradient(circle at 50% -10%,#137a51 0%,#0b5d3b 45%,#05291c 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+.hidden{display:none !important;}
+.wrap{max-width:520px;margin:0 auto;padding:8px 9px 22px;}
+
+/* ---------- 通用 ---------- */
+button{font-family:inherit;cursor:pointer;border:0;outline:0;}
+.btn-primary{
+  display:block;width:100%;padding:13px 10px;border-radius:13px;font-size:19px;font-weight:800;letter-spacing:4px;
+  color:#3a2400;background:linear-gradient(180deg,#ffe89a,#f5c542 45%,#d99e00);border:1px solid #b8860b;
+  box-shadow:0 4px 0 #9a6d00,0 6px 14px rgba(0,0,0,.25);
+}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #9a6d00;}
+.btn-primary[disabled]{opacity:.45;filter:grayscale(.5);box-shadow:none;}
+.btn-ghost{
+  padding:11px 8px;border-radius:11px;font-size:16px;font-weight:700;background:#fff;color:#26323a;
+  border:2px solid var(--line);box-shadow:0 2px 0 rgba(0,0,0,.06);
+}
+.btn-ghost:active{transform:translateY(1px);}
+.btn-ghost[disabled]{opacity:.4;}
+.btn-plus{background:linear-gradient(180deg,#e8fff1,#bff0d4);border-color:#7fd3a4;color:#0d5c30;}
+.btn-minus{background:linear-gradient(180deg,#fff2f2,#ffd9d9);border-color:#f0a8a8;color:#8a1414;}
+
+/* ---------- 登录页（只有名牌）---------- */
+#loginScreen{max-width:440px;margin:0 auto;padding:24px 14px 30px;text-align:center;color:#fff;}
+.lseason{font-size:20px;font-weight:900;letter-spacing:1px;color:var(--gold);text-shadow:0 2px 0 #5c3d00;}
+.lsub{color:#cfe6da;font-size:13px;margin:7px 0 15px;line-height:1.5;}
+.login-box{background:#fff;border-radius:18px;padding:13px;box-shadow:0 10px 26px rgba(0,0,0,.3);}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.quick-btn{display:flex;align-items:center;gap:9px;padding:11px 10px;border-radius:12px;background:#f4f7f9;border:1px solid var(--line);
+  font-size:16px;font-weight:800;color:#24313a;text-align:left;}
+.quick-btn:active{background:#fdf3d6;border-color:var(--gold);}
+.quick-btn .av{width:40px;height:40px;border-radius:50%;background:#fff;color:#111;border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;flex:0 0 auto;overflow:hidden;}
+.quick-btn .av img{width:100%;height:100%;object-fit:cover;}
+.quick-btn small{display:block;color:var(--sub);font-weight:600;font-size:11px;letter-spacing:1px;}
+/* 自建二次确认弹窗 */
+.confirmsheet{max-width:340px;}
+.confirmsheet h2{margin-bottom:8px;}
+.confirmtext{font-size:14px;line-height:1.7;color:#33414b;font-weight:700;text-align:center;padding:2px 2px 4px;}
+.confirmtext b{color:#a01b1b;}
+
+/* ---------- 顶部 ---------- */
+header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start;gap:7px;}
+.topseason{flex:1;min-width:0;}
+.topseason .s1{font-size:17px;font-weight:900;color:var(--gold);letter-spacing:.5px;text-shadow:0 1px 0 #4a3200;}
+.topseason .s2{font-size:12.5px;color:#d8ece1;margin-top:2px;letter-spacing:.3px;}
+.gearbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:19px;flex:0 0 auto;}
+.testwrap{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.14);border-radius:999px;padding:3px 7px 3px 9px;flex:0 0 auto;}
+.testwrap span{font-size:11.5px;color:#fff;font-weight:700;}
+.switch{position:relative;width:40px;height:22px;border-radius:999px;background:#93a3ad;transition:background .15s;flex:0 0 auto;}
+.switch.on{background:#27c07a;}
+.switch i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.switch.on i{left:20px;}
+
+.welrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 3px 7px;}
+.wel{color:#fff;font-size:17px;font-weight:900;letter-spacing:.5px;}
+.logoutbtn{padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font-size:12.5px;font-weight:800;}
+
+/* ---------- 排行榜 ---------- */
+.board{background:rgba(255,255,255,.97);border-radius:15px;margin:0 auto;padding:9px 11px 11px;box-shadow:0 6px 18px rgba(0,0,0,.25);}
+.board h3{margin:2px 0 7px;font-size:14.5px;text-align:center;color:#0b5d3b;letter-spacing:2px;font-weight:900;}
+.blist{list-style:none;margin:0;padding:0;}
+.blist li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;margin-bottom:4px;}
+.blist li .rk{width:20px;text-align:center;font-weight:900;color:#8b98a3;font-size:14px;flex:0 0 auto;}
+.blist li .av{width:32px;height:32px;border-radius:50%;background:#fff;color:#111;border:2px solid #e0b64a;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto;overflow:hidden;}
+.blist li .av img{width:100%;height:100%;object-fit:cover;}
+.blist li .nmc{flex:1;min-width:0;display:flex;flex-direction:column;}
+.blist li .nm{font-weight:800;font-size:15px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.blist li .ttag{font-size:10.5px;font-weight:800;color:#a8720a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.blist li .pt{font-weight:900;font-size:18px;color:#0b5d3b;}
+.blist li.me{background:linear-gradient(90deg,#fff2c9,#ffe9a3);box-shadow:inset 0 0 0 2px var(--gold);}
+.blist li.me .rk{color:#a8720a;}
+
+/* 排行榜内的挑战墙 */
+.cbh{margin:8px 0 5px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;font-weight:900;color:#0b5d3b;letter-spacing:1.5px;}
+.cblist{list-style:none;margin:0;padding:0;}
+.cblist li{display:flex;align-items:baseline;gap:5px;padding:5px 6px;border-radius:9px;font-size:13px;}
+.cblist li:nth-child(odd){background:#f7fafc;}
+.cblist li .nm{font-weight:800;flex:0 0 auto;color:#24313a;}
+.cblist li .txt{flex:1;min-width:0;color:#4b5b66;word-break:break-all;}
+.cblist li .st{flex:0 0 auto;font-weight:900;font-size:11.5px;color:#9aa7b1;white-space:nowrap;}
+.cblist li .st.done{color:#0d7c46;}
+.cblist li.empty{color:#9aa7b1;font-weight:700;justify-content:center;}
+
+/* ---------- 本期挑战 ---------- */
+.chalpanel{background:#fff;border-radius:15px;padding:10px 11px;margin-top:9px;box-shadow:0 6px 18px rgba(0,0,0,.25);}
+.chalpanel h3{margin:0 0 6px;font-size:14.5px;font-weight:900;color:#0b5d3b;letter-spacing:1px;}
+.chalpanel h3 .admin{font-size:11px;color:#b07a00;font-weight:800;letter-spacing:0;}
+.chalrow{display:flex;align-items:center;gap:8px;padding:4px 0;}
+.chalrow .av{width:34px;height:34px;border-radius:50%;background:#fff;color:#111;border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex:0 0 auto;overflow:hidden;}
+.chalrow .av img{width:100%;height:100%;object-fit:cover;}
+.chalrow .crt{flex:1;min-width:0;}
+.chalrow .nm{font-size:13.5px;font-weight:800;color:#24313a;margin-bottom:3px;}
+.chalrow input[type=text]{width:100%;padding:8px 9px;border-radius:9px;border:2px solid var(--line);font-size:13.5px;font-family:inherit;font-weight:600;background:#fff;outline:0;}
+.chalrow input[type=text]:focus{border-color:var(--gold);}
+.chalrow input[type=text][disabled]{background:#f3f5f7;color:#7d8a94;}
+.chalrow .ck{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:800;color:#0d7c46;flex:0 0 auto;
+  background:#f2fbf6;border:2px solid #cdeadd;border-radius:11px;padding:5px 6px;cursor:pointer;}
+.chalrow .ck input{width:19px;height:19px;margin:0;}
+.chalrow .ck.off{color:#9aa7b1;background:#f5f7f9;border-color:#e6ebef;}
+.chalbar{margin-top:8px;display:flex;flex-direction:column;gap:5px;}
+.chalbar .btn-primary{padding:10px;font-size:16px;letter-spacing:3px;}
+.lockhint2{text-align:center;font-size:11.5px;font-weight:800;color:#b07a00;}
+.note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f2f8f4;color:#28543c;font-size:12px;line-height:1.55;font-weight:700;}
+.note b{color:#0b5d3b;}
+
+/* ---------- 计分器 ---------- */
+.counter{background:#fff;border-radius:15px;padding:10px 11px;margin-top:9px;box-shadow:0 6px 18px rgba(0,0,0,.25);}
+.counter .crow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.counter .who{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.counter .who .av{width:34px;height:34px;border-radius:50%;background:#fff;color:#111;border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;overflow:hidden;flex:0 0 auto;}
+.counter .who .av img{width:100%;height:100%;object-fit:cover;}
+.counter .who b{font-size:15.5px;}
+.mybadge{display:inline-flex;align-items:center;gap:1px;background:#fff8e2;border:1.5px solid #e8cf86;border-radius:999px;padding:2px 6px;}
+.mybadge .ct{font-size:11.5px;font-weight:900;color:#a8720a;margin-left:2px;}
+.daypick{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);font-weight:700;}
+.daypick select{padding:5px 7px;border-radius:8px;border:2px solid var(--line);font-size:13.5px;font-weight:700;background:#fff;}
+.stat{margin:8px 0 3px;padding:8px 9px;border-radius:11px;background:#f5f8fa;font-size:13.5px;line-height:1.6;color:#26323a;}
+.stat b{font-size:19px;color:#0b5d3b;}
+.stat .cap{color:#b07a00;font-size:11.5px;font-weight:700;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.btn-primary.save{margin-top:9px;font-size:20px;}
+.lockhint{color:#b07a00;font-size:12px;font-weight:800;margin-top:6px;text-align:center;}
+
+/* ---------- 皇冠（CSS 绘制）---------- */
+.crownwrap{position:relative;display:inline-block;vertical-align:middle;}
+.crownwrap .crown{display:block;width:100%;height:100%;}
+/* 大王冠：金色 + 3 个高尖 + 红宝石 + 金珠带 */
+.crownwrap.big{width:64px;height:46px;}
+.crownwrap.big .crown{
+  background:linear-gradient(180deg,#fff6c9,#ffd452 32%,#e2a400 68%,#95650a);
+  clip-path:polygon(0% 100%,0% 52%,12% 66%,25% 8%,37% 58%,50% 0%,63% 58%,75% 8%,88% 66%,100% 52%,100% 100%);
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));
+}
+.crownwrap.big .gem{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 28%,#ffb3b3,#c90000);box-shadow:0 0 5px rgba(255,60,60,.95);}
+.crownwrap.big .g1{width:10px;height:10px;left:50%;top:40%;margin-left:-5px;}
+.crownwrap.big .g2{width:8px;height:8px;left:22%;top:44%;}
+.crownwrap.big .g3{width:8px;height:8px;right:22%;top:44%;}
+.crownwrap.big .band{position:absolute;left:4%;right:4%;bottom:2%;height:22%;border-radius:3px;
+  background:linear-gradient(180deg,#ffe9a0,#e0a900);box-shadow:inset 0 1px 0 #fff4c0;}
+/* 小王冠：银白色 + 3 个矮尖 + 无宝石（形状与大王冠明显不同）*/
+.crownwrap.small{width:36px;height:23px;}
+.crownwrap.small .crown{
+  background:linear-gradient(180deg,#ffffff,#e3eaf1 40%,#b3bfcb 74%,#7f8b97);
+  clip-path:polygon(0% 100%,0% 46%,16% 62%,33% 14%,50% 52%,67% 14%,84% 62%,100% 46%,100% 100%);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));
+}
+/* 迷你皇冠（累积展示）*/
+.crownwrap.mini{width:17px;height:12px;}
+.crownwrap.mini .crown{background:linear-gradient(180deg,#fff2b8,#ffcc33 45%,#c68a00);clip-path:polygon(0% 100%,0% 46%,16% 62%,33% 14%,50% 52%,67% 14%,84% 62%,100% 46%,100% 100%);}
+.knife{font-size:15px;line-height:1;}
+
+/* ---------- 弹窗 ---------- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:14px;overflow:auto;}
+.modal .sheet{width:100%;max-width:400px;background:#fff;border-radius:18px;padding:14px 15px;box-shadow:0 16px 50px rgba(0,0,0,.5);margin:auto;}
+.modal h2{margin:0 0 3px;font-size:18px;text-align:center;color:#8a2010;font-weight:900;}
+.modal .close-x{position:relative;float:right;font-size:20px;color:#8b98a3;background:none;font-weight:800;line-height:1;}
+.titlebig{text-align:center;font-size:18px;font-weight:900;color:#8a2010;letter-spacing:.5px;margin:6px 0 10px;}
+.lbl2{font-size:13.5px;font-weight:800;color:#6b7a86;margin:6px 0 3px;}
+.moneylist{list-style:none;margin:0;padding:0;font-size:14.5px;}
+.moneylist li{display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px dashed var(--line);font-weight:700;}
+.moneylist li .amt{font-weight:900;}
+.moneylist li .pos{color:#0d7c46;}
+.moneylist li .neg{color:#b02a1d;}
+.total-line{display:flex;justify-content:space-between;align-items:baseline;margin-top:9px;padding:9px 6px;border-radius:12px;background:#fff7dd;font-weight:900;}
+.total-line .big{font-size:23px;color:#a8720a;}
+.privi{margin-top:8px;padding:9px 10px;border-radius:11px;background:#eef7f1;color:#0d5c30;font-size:12.5px;font-weight:700;line-height:1.55;}
+.recgrid{margin:6px 0 0;}
+.recgrid .r{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px dashed var(--line);font-size:14.5px;font-weight:700;}
+.recgrid .r span:last-child{font-weight:900;color:#0b5d3b;}
+.quote{margin:12px 0 3px;padding:12px;border-radius:13px;background:linear-gradient(180deg,#fffdf3,#fff2cf);text-align:center;font-size:18px;font-weight:900;color:#8a2010;}
+.killbox{margin:6px 0 9px;padding:9px 11px;border-radius:13px;background:linear-gradient(180deg,#2a2f36,#15191d);color:#fff;box-shadow:inset 0 0 0 2px #b8860b;}
+.killbox .krow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.18);font-size:13.5px;}
+.killbox .krow:last-child{border-bottom:0;}
+.killbox .krow span{color:#e9c46a;font-weight:800;flex:0 0 auto;}
+.killbox .krow b{text-align:right;font-weight:900;}
+.modalnav{display:flex;gap:9px;margin-top:12px;}
+.modalnav button{flex:1;padding:11px;border-radius:11px;font-size:15px;font-weight:800;}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:10px;}
+.dots i{width:8px;height:8px;border-radius:50%;background:#d5dde3;display:block;}
+.dots i.on{background:var(--gold);}
+
+/* 加冕：圆形头像 + 头像框 + 头顶王冠 */
+.crownstage{position:relative;display:flex;flex-direction:column;align-items:center;width:fit-content;margin:6px auto 2px;}
+.crownstage .cslot{height:48px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:-16px;z-index:3;}
+.crownstage .avatarframe{width:96px;height:96px;border-radius:50%;background:#fff;border:4px solid var(--gold);
+  box-shadow:0 6px 16px rgba(0,0,0,.28),inset 0 0 0 3px #fff;
+  display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:#111;overflow:hidden;}
+.crownstage .avatarframe{position:relative;}
+.crownstage .avatarframe img{width:100%;height:100%;object-fit:cover;display:block;}
+.crownstage.plain .avatarframe{border-color:#c9d5dd;box-shadow:0 6px 16px rgba(0,0,0,.22),inset 0 0 0 3px #fff;}
+/* 刺客加冕：刀挂在 .crownstage 图层（头像框之外、之上），右下方微微外溢，不被 overflow 裁切 */
+.crownstage .avknife{position:absolute;right:-4px;bottom:-4px;font-size:26px;line-height:1;z-index:4;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));}
+
+/* 设置面板 */
+.setrow{margin:11px 0;}
+.setrow label{display:block;font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:5px;}
+.setrow select,.setrow input[type=date],.setrow input[type=number]{width:100%;padding:10px;border-radius:9px;border:2px solid var(--line);font-size:14.5px;font-weight:700;font-family:inherit;background:#fff;}
+.setrow .inline{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dangerbtn{width:100%;padding:12px;border-radius:11px;background:#fff0f0;border:2px solid #f0b7b7;color:#a01b1b;font-weight:800;font-size:14.5px;}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:60px;transform:translateX(-50%) translateY(10px);background:rgba(20,30,25,.94);color:#fff;
+  padding:10px 18px;border-radius:999px;font-weight:800;font-size:14.5px;opacity:0;pointer-events:none;transition:.2s;z-index:120;max-width:88vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ============ 登录页（只有名牌，点一下就进）============ -->
+<div id="loginScreen" class="screen">
+  <div class="lseason">【s1-黎明之始】健康饮食打卡</div>
+  <div class="lsub">点一下自己的名牌，直接进</div>
+  <div class="login-box">
+    <div class="quick-grid" id="quickGrid"></div>
+  </div>
+</div>
+
+<!-- ============ 主页面 ============ -->
+<div id="mainScreen" class="screen hidden">
+  <div class="wrap">
+    <header class="topbar">
+      <div class="topseason">
+        <div class="s1">【s1-黎明之始】健康饮食打卡</div>
+        <div class="s2" id="segLine">第3赛段</div>
+      </div>
+      <div class="testwrap" id="testSwitchWrap" title="测试模式">
+        <span>测试</span>
+        <div class="switch" id="testSwitch"><i></i></div>
+      </div>
+      <button class="gearbtn" id="btnGear" title="设置">⚙</button>
+    </header>
+
+    <div class="welrow">
+      <span class="wel" id="welLine">欢迎</span>
+      <button class="logoutbtn" id="btnLogout">登出</button>
+    </div>
+
+    <div class="board">
+      <h3>本赛段排行榜</h3>
+      <ul class="blist" id="boardList"></ul>
+      <div class="cbh">本期挑战</div>
+      <ul class="cblist" id="boardChal"></ul>
+    </div>
+
+    <div class="chalpanel">
+      <h3>本期挑战 <span class="admin">（每人 1 条 · 这里只显示自己的）</span></h3>
+      <div id="chalList"></div>
+      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+20</b> 挑战分（不受每日 4 分上限限制）。</div>
+    </div>
+
+    <div class="counter">
+      <div class="crow">
+        <div class="who" id="counterWho"></div>
+        <div class="daypick">
+          <span>填写</span>
+          <select id="daySelect"></select>
+        </div>
+      </div>
+
+      <div class="stat" id="counterStat"></div>
+
+      <div class="grid2">
+        <button class="btn-ghost btn-plus" id="btnMeal">＋ 健康餐</button>
+        <button class="btn-ghost btn-plus" id="btnWeigh">＋ 上称</button>
+        <button class="btn-ghost btn-minus" id="btnUndo">－ 撤销</button>
+        <button class="btn-ghost" id="btnClear">清空本日</button>
+      </div>
+
+      <div class="note">计分说明：日常分（每天上限 <b>4</b> 分＝健康餐 <b>3</b> 顿封顶 ＋ 上称 1 次，健康餐满 3 顿后按钮锁住，上称可多记但只计 1 分）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分</div>
+
+      <button class="btn-primary save" id="btnSave">保 存</button>
+      <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
+      <div class="lockhint hidden" id="lockHint"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 结算卡片 ============ -->
+<div id="settleModal" class="modal hidden">
+  <div class="sheet">
+    <button class="close-x" id="settleClose">✕</button>
+    <div id="cardBody"></div>
+    <div class="dots" id="cardDots"><i></i><i></i></div>
+    <div class="modalnav">
+      <button class="btn-ghost" id="cardPrev">上一页</button>
+      <button class="btn-ghost" id="cardNext">下一页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 设置 ============ -->
+<div id="settingsModal" class="modal hidden">
+  <div class="sheet">
+    <button class="close-x" id="setClose">✕</button>
+    <h2>设置</h2>
+
+    <div class="setrow">
+      <label>称号（默认自动：按皇冠数算）</label>
+      <div class="note" style="margin-top:0;">自动规则：<b>1 冠 → 无称号</b>；<b>2 冠 → 河贼公·XX小王</b>；<b>3 冠 → 河贼王·XX大王</b>（一赛季最多 3 冠）</div>
+      <button class="btn-ghost" id="setAutoTitle" style="width:100%;margin-top:8px;">恢复自动称号</button>
+      <div class="inline" style="margin-top:8px;">
+        <select id="setKing"></select>
+        <select id="setDuke"></select>
+      </div>
+      <div class="note" style="margin-top:8px;">下面这两个下拉只作调试用（选了就临时覆盖自动称号）。左＝河贼王（大王冠，敬献 10r/人）　右＝河贼公（小王冠，敬献 5r/人）</div>
+    </div>
+
+    <div class="setrow">
+      <label>本期刺客（固定）</label>
+      <div class="note" style="margin-top:0;"><b>🔪 本期刺客：芋头（hyt）</b>　—— 本期已写死，不开放修改；下一期再补充刺客计算规则。</div>
+      <div class="note" style="margin-top:8px;">弑君成功要同时满足三条：① 刺客计分进前二 ② 目标（结算前的当前王/公）计分进后二 ③ 刺客分 &gt; 目标分。满足了 → 本局无王，刺客免出钱、免纳贡（场上还有公，公照常收敬献）；没满足 → 按普通人结算，画面写「这次没刺杀成功，下次一定」。</div>
+    </div>
+
+    <div class="setrow">
+      <label>赛段起始日期（赛段号写死为第 3 赛段，改代码里的 SEG_NO 即可）</label>
+      <input type="date" id="setStart"/>
+    </div>
+
+    <div class="setrow">
+      <label>测试模式</label>
+      <button class="btn-ghost" id="setToggleTest" style="width:100%;">切换</button>
+    </div>
+
+    <div class="setrow">
+      <button class="dangerbtn" id="btnReset">清空全部数据（重置）</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 重置二次确认（自建，不用原生 confirm）============ -->
+<div id="confirmModal" class="modal hidden">
+  <div class="sheet confirmsheet">
+    <h2>确认重置本机数据？</h2>
+    <div class="confirmtext">
+      将把本机数据全部恢复初始：<br/>
+      头像回到四个汉字 · 每日计分清零 · 挑战全部清空 ·<br/>
+      皇冠回 <b>蛋蛋2 / 栋栋1 / 西瓜1 / 芋头0＋🔪</b> · 结算记录清除。<br/>
+      <b>此操作不可撤销。</b>
+    </div>
+    <div class="modalnav">
+      <button class="btn-ghost" id="confirmCancel">取消</button>
+      <button class="dangerbtn" id="confirmOk">确定重置</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================
+   1. 基础数据
+   ========================================================= */
+var ROSTER={
+  hyt:{char:'芋',name:'芋头'},
+  gd :{char:'栋',name:'栋栋'},
+  clm:{char:'蛋',name:'蛋蛋'},
+  lmh:{char:'瓜',name:'西瓜'}
+};
+var ORDER=['hyt','gd','clm','lmh'];
+var SEASON='s1-黎明之始';
+var SEG_NO=3;                                  /* ←★ 赛段号写死在这里 */
+var INIT_CROWNS={hyt:0, gd:1, clm:2, lmh:1};   /* 蛋蛋2👑 栋栋1👑 西瓜1👑 芋头0👑 */
+var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
+var MAX_MEALS=3, MAX_WEIGH=1, DAY_CAP=4, CHALLENGE_PTS=20;
+var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 前二名各得 6r */
+var KING_FEE=10, DUKE_FEE=5;   /* 赛季敬献：河贼王 10r/人，河贼公 5r/人 */
+var STORE_KEY='jianfei_score_v2';
+/* ★ 本期刺客写死为芋头（hyt）：设置面板不再开放修改，下一期再补充刺客计算规则 */
+var ASSASSIN_ID='hyt';
+var SCORING_FROM=6, SCORING_TO=23;
+var SEGMENT_DAYS=7;
+var CHAL_REVISION_LIMIT=1;     /* 挑战保存后允许再改的次数（1 次，改过就锁） */
+var CROWN_MAX=3;               /* 一赛季最多 3 冠 */
+
+/* =========================================================
+   2. 状态
+   ========================================================= */
+function freshState(){
+  var players={};
+  ORDER.forEach(function(id){
+    players[id]={
+      days:{},
+      crowns:INIT_CROWNS[id],
+      knives:INIT_KNIVES[id],
+      challenge:{text:'',done:false,saved:false,revisions:0},
+      avatar:null
+    };
+  });
+  return {
+    season:SEASON,
+    segment:SEG_NO,
+    segStart:'2026-10-12',
+    players:players,
+    currentUser:null,
+    testMode:true,
+    titleAuto:true,
+    segTitle:{king:null,duke:null},
+    assassin:ASSASSIN_ID,
+    dayOverride:null,
+    settled:false,
+    crownBase:null,
+    lastTop2:null
+  };
+}
+function migrate(s){
+  if(!s||typeof s!=='object') return freshState();
+  var base=freshState();
+  base.season=SEASON;                 /* ★ 赛季以代码常量为准（改了 SEASON 即切换，变更前的已自动备份） */
+  base.segment=SEG_NO;
+  base.segStart=s.segStart||'2026-10-12';
+  base.currentUser=s.currentUser||null;
+  base.testMode=(s.testMode===undefined)?true:!!s.testMode;
+  base.dayOverride=(s.dayOverride===undefined)?null:s.dayOverride;
+  base.settled=!!s.settled;
+  if(s.crownBase&&typeof s.crownBase==='object'){
+    var cb={},cbok=true;
+    ORDER.forEach(function(id){ var v=s.crownBase[id]; if(typeof v!=='number'){ cbok=false; } else cb[id]=Math.max(0,Math.min(CROWN_MAX,v)); });
+    if(cbok) base.crownBase=cb;
+  }
+  if(s.lastTop2&&s.lastTop2.length){ base.lastTop2=s.lastTop2.slice(0,2); }
+  base.assassin=ASSASSIN_ID;          /* ★ 本期刺客固定为芋头，忽略本机存的旧值（防止被误改） */
+  base.titleAuto=(s.titleAuto===undefined)?true:!!s.titleAuto;
+  if(s.segTitle){
+    var k=null,d=null;
+    if(s.segTitle.king!==undefined||s.segTitle.duke!==undefined){ k=s.segTitle.king||null; d=s.segTitle.duke||null; }
+    else{
+      if(s.segTitle.level==='king') k=s.segTitle.holder||null;
+      else if(s.segTitle.level==='duke') d=s.segTitle.holder||null;
+    }
+    if(k&&k===d) d=null;
+    base.segTitle={king:k,duke:d};
+  }
+  ORDER.forEach(function(id){
+    var p=(s.players&&s.players[id])||{};
+    var d=base.players[id];
+    if(p.days&&typeof p.days==='object') d.days=p.days;
+    if(typeof p.crowns==='number') d.crowns=Math.max(0,Math.min(CROWN_MAX,p.crowns));
+    if(typeof p.knives==='number') d.knives=p.knives;
+    if(p.challenge){
+      d.challenge={
+        text:p.challenge.text||'',
+        done:!!p.challenge.done,
+        saved:(p.challenge.saved===undefined)?!!(p.challenge.text):!!p.challenge.saved,
+        revisions:(typeof p.challenge.revisions==='number')?p.challenge.revisions:0
+      };
+    }
+    if(p.avatar) d.avatar=p.avatar;
+  });
+  return base;
+}
+/* ---------- 自动备份（赛季 / 赛段变更时）---------- */
+var BACKUP_PREFIX='jianfei_backup_';
+var BACKUP_MAX=5;               /* 每个 <赛季_赛段> 组合最多保留 5 份 */
+var TAG_KEY=STORE_KEY+'_seentag';
+function backupKey(season,segment){ return BACKUP_PREFIX+String(season)+'_'+String(segment); }
+/* 把一份完整快照存到 localStorage（保留最近 BACKUP_MAX 份，先进先出） */
+function writeBackup(snapshot,season,segment){
+  try{
+    var key=backupKey(season,segment), arr=[];
+    var raw=localStorage.getItem(key);
+    if(raw){ try{ var a=JSON.parse(raw); if(Array.isArray(a)) arr=a; }catch(e){} }
+    arr.push({t:Date.now(),season:String(season),segment:String(segment),data:snapshot});
+    while(arr.length>BACKUP_MAX) arr.shift();
+    localStorage.setItem(key,JSON.stringify(arr));
+    return key;
+  }catch(e){ return null; }
+}
+/* 手动/后续使用：立刻把当前 state 备份一份 */
+function backupNow(){
+  try{
+    var snap=JSON.parse(JSON.stringify(state));
+    var key=writeBackup(snap,state.season,state.segment);
+    console.log('[备份] 已手动备份当前数据 →',key);
+    return key;
+  }catch(e){ return null; }
+}
+/* 启动时检查：SEASON / SEG_NO 变化了（改代码或新开赛季）→ 把【变更前】的原始数据自动备份一份 */
+function checkRollover(){
+  try{
+    var tag=SEASON+'_'+SEG_NO;
+    var last=localStorage.getItem(TAG_KEY);
+    if(last===tag) return;                 /* 赛季/赛段没变，跳过 */
+    var raw=localStorage.getItem(STORE_KEY);
+    if(raw){
+      var parsed=null;
+      try{ parsed=JSON.parse(raw); }catch(e){ parsed=null; }
+      if(parsed&&typeof parsed==='object'&&parsed.players){
+        var oldSeason=parsed.season||(last?String(last).split('_')[0]:SEASON);
+        var oldSeg=(parsed.segment===undefined)?(last?String(last).split('_')[1]:SEG_NO):parsed.segment;
+        var key=writeBackup(parsed,oldSeason,oldSeg);
+        console.log('[备份] 赛季/赛段变更，已自动备份变更前数据 →',key);
+      }
+    }
+    localStorage.setItem(TAG_KEY,tag);
+  }catch(e){}
+}
+function load(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY);
+    if(!raw) return freshState();
+    return migrate(JSON.parse(raw));
+  }catch(e){ return freshState(); }
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY,JSON.stringify(state)); }catch(e){}
+}
+checkRollover();   /* ★ 先做变更检测，再读状态 */
+var state=load();
+var cardPage=1;
+var LAST_S=null;
+var editTarget=null;
+var undoStack=[];
+var chalDraft={};      /* 未点保存的挑战草稿（只在内存，不进 state） */
+
+/* =========================================================
+   3. 时间 / 赛段
+   ========================================================= */
+function todayDate(){ var d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function fmtMD(d){ return (d.getMonth()+1)+'月'+d.getDate()+'日'; }
+function segStartDate(){
+  var p=String(state.segStart||'2026-10-12').split('-');
+  return new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+}
+function naturalDay(){
+  var diff=Math.round((todayDate()-segStartDate())/86400000)+1;
+  return Math.min(SEGMENT_DAYS,Math.max(1,diff));
+}
+function currentDay(){
+  if(state.testMode&&state.dayOverride) return state.dayOverride;
+  return naturalDay();
+}
+function editId(){ return (state.testMode&&editTarget)?editTarget:state.currentUser; }
+function me(){ return state.currentUser; }
+
+function nowHour(){ return new Date().getHours(); }
+function scoringOpen(){ if(state.testMode) return true; var h=nowHour(); return h>=SCORING_FROM&&h<SCORING_TO; }
+function settleOpen(){ if(state.testMode) return true; return currentDay()>=SEGMENT_DAYS; }
+
+/* =========================================================
+   4. 计分
+   ========================================================= */
+function getDay(id,d){
+  if(!state.players[id].days[d]) state.players[id].days[d]={meals:0,weigh:0};
+  return state.players[id].days[d];
+}
+function dayScore(id,d){
+  var dt=state.players[id].days[d];
+  if(!dt) return 0;
+  var m=Math.min(dt.meals||0,MAX_MEALS);
+  var w=Math.min(dt.weigh||0,MAX_WEIGH);
+  return m+w;
+}
+function challengePts(id){
+  var c=state.players[id].challenge;
+  return (c&&c.done)?CHALLENGE_PTS:0;
+}
+function dailyScore(id){
+  var s=0;
+  for(var d=1;d<=SEGMENT_DAYS;d++) s+=dayScore(id,d);
+  return s;
+}
+function totalScore(id){ return dailyScore(id)+challengePts(id); }
+function ranking(){
+  var r=ORDER.map(function(id){ return {id:id,score:totalScore(id)}; });
+  r.sort(function(a,b){ return (b.score-a.score)||(ORDER.indexOf(a.id)-ORDER.indexOf(b.id)); });
+  return r;
+}
+function rankOf(id){
+  var r=ranking();
+  for(var i=0;i<r.length;i++) if(r[i].id===id) return i+1;
+  return 0;
+}
+function daysChecked(id){
+  var n=0;
+  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0)) n++; }
+  return n;
+}
+function fullMealDays(id){
+  var n=0;
+  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&(dt.meals||0)>=MAX_MEALS) n++; }
+  return n;
+}
+function weighDays(id){
+  var n=0;
+  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&(dt.weigh||0)>0) n++; }
+  return n;
+}
+
+/* =========================================================
+   5. 称号（自动按皇冠数） / 结算
+   ========================================================= */
+function crownsToLevel(c){ if(c>=3) return 'king'; if(c===2) return 'duke'; return null; }
+function curLevel(id){
+  if(state.titleAuto) return crownsToLevel(state.players[id].crowns);
+  if(state.segTitle.king===id) return 'king';
+  if(state.segTitle.duke===id) return 'duke';
+  return null;
+}
+function fullTitle(id,level){
+  if(level==='king') return '河贼王·'+ROSTER[id].name+'大王';
+  if(level==='duke') return '河贼公·'+ROSTER[id].name+'小王';
+  return '';
+}
+/* 本赛段称号持有人（王在前；同一人只算最高称号）。
+   crownMap 可选：传入某份「皇冠数快照」来算彼时的称号（如结算前的 crownBase）；
+   不传则用当前皇冠数。 */
+function titleHoldersFrom(crownMap){
+  var out=[]; var i,h,lv;
+  if(state.titleAuto){
+    for(i=0;i<ORDER.length;i++){
+      h=ORDER[i];
+      lv=crownsToLevel(crownMap[h]||0);
+      if(lv) out.push({id:h,level:lv});
+    }
+    out.sort(function(a,b){ return (a.level==='king'?0:1)-(b.level==='king'?0:1); });
+  }else{
+    if(state.segTitle.king&&ROSTER[state.segTitle.king]) out.push({id:state.segTitle.king,level:'king'});
+    if(state.segTitle.duke&&ROSTER[state.segTitle.duke]&&state.segTitle.duke!==state.segTitle.king) out.push({id:state.segTitle.duke,level:'duke'});
+  }
+  return out;
+}
+function currentCrownsMap(){
+  var c={}; ORDER.forEach(function(id){ c[id]=state.players[id].crowns; }); return c;
+}
+function titleHolders(){ return titleHoldersFrom(currentCrownsMap()); }
+/* ★ 结算【前】的称号持有人：用结算基准皇冠(crownBase)算——即「本赛段结算之前」的王/公。
+   crownBase 不存在（从未结算）时等同当前皇冠。刺杀目标必须取这一份。 */
+function preSettleHolders(){ return titleHoldersFrom(state.crownBase?state.crownBase:currentCrownsMap()); }
+/* ★ 进贡（并列算法）：按分数降序分群，返回 [{from,to,amt}]，收支恒为 0，每人最多出 6r。
+   规则（4人局，TRIBUTE=6）：
+     A 分群数=1（全平）        → 不进贡
+     B 分群数=2：
+        · 上群1人              → 该人收 6×(下群人数)，下群每人出 6r
+        · 下群1人              → 该人出 6r，上群每人得 6/上群人数
+        · 否则（2-2）          → 上群每人得 6r、下群每人出 6r
+     C 分群数≥3：
+        · 分数全不同          → 后二名各出 6r、前二名各得 6r（同原规则）
+        · 第1群只1人          → 该人收 6×(其余总人数)，其余每人出 6r
+        · 最后1群只1人        → 该人出 6r，其余每人得 6/其余人数
+        · 否则                → 后二名各出 6r、前二名各得 6r */
+function buildTribute(ranked){
+  var n=ranked.length;
+  if(!n) return [];
+  var ids=ranked.map(function(r){ return r.id; });
+  var sc =ranked.map(function(r){ return r.score; });
+  var groups=[], i=0;
+  while(i<n){
+    var g=[ids[i]], s0=sc[i], j=i+1;
+    while(j<n && sc[j]===s0){ g.push(ids[j]); j++; }
+    groups.push(g); i=j;
+  }
+  var gcnt=groups.length;
+  var out=[];
+  function T(from,to,amt){ if(amt>0) out.push({from:from,to:to,amt:amt}); }
+  function allDistinct(){ for(var k=0;k<groups.length;k++){ if(groups[k].length!==1) return false; } return true; }
+  /* ★交叉配对：末名(第4名)→第2名；次末(第3名)→第1名 */
+  function pairTopBottom(){ T(ids[3],ids[1],TRIBUTE); T(ids[2],ids[0],TRIBUTE); }
+
+  if(gcnt<=1){ /* 全平 → 不进贡 */ }
+  else if(gcnt===2){
+    var up=groups[0], down=groups[1];
+    if(up.length===1){
+      down.forEach(function(p){ T(p,up[0],TRIBUTE); });          /* 上群1人：独收 */
+    }else if(down.length===1){
+      var share=TRIBUTE/up.length;                              /* 下群1人：垫底出6，上群平分 */
+      up.forEach(function(r){ T(down[0],r,share); });
+    }else{
+      for(var k=0;k<up.length;k++) T(down[k],up[k],TRIBUTE);    /* 2-2：1对1各 6r */
+    }
+  }else{
+    if(allDistinct()){
+      pairTopBottom();                                          /* 全不同：后二出6、前二得6 */
+    }else if(groups[0].length===1){
+      for(var a=1;a<gcnt;a++) groups[a].forEach(function(p){ T(p,groups[0][0],TRIBUTE); });
+    }else if(groups[gcnt-1].length===1){
+      var share2=TRIBUTE/(n-1);
+      for(var b=0;b<gcnt-1;b++) groups[b].forEach(function(r){ T(groups[gcnt-1][0],r,share2); });
+    }else{
+      pairTopBottom();
+    }
+  }
+  return out;
+}
+function computeSettlement(){
+  var ranked=ranking();
+  var money={},details={};
+  ORDER.forEach(function(id){ money[id]=0; details[id]=[]; });
+  var holders=titleHolders();          /* 结算【后】实际称号（刚加冕者本局即收敬献） */
+  var preHolders=preSettleHolders();   /* 结算【前】称号（刺杀目标取这份） */
+  var top2=[ranked[0].id,ranked[1].id];
+  var bot2=[ranked[2].id,ranked[3].id];
+
+  /* ---- 刺客 / 弑君判定（★三条同时满足才算成功）----
+     ① 刺客本人计分进前二
+     ② 刺杀目标计分进后二
+     ③ 刺客分 > 目标分
+     ★刺杀目标 = 【本赛段结算之前】的最高称号持有人（有王则王，否则取 ORDER 顺序最靠前的公）；
+       不能用结算后的称号选，否则「被截胡者连任/升级」的判断会被结算本身改写。 */
+  var target=preHolders.length?preHolders[0]:null;
+  var kill=null;
+  if(ASSASSIN_ID&&ROSTER[ASSASSIN_ID]&&target&&ASSASSIN_ID!==target.id){
+    var kr=rankOf(ASSASSIN_ID), tr=rankOf(target.id);
+    var ks=totalScore(ASSASSIN_ID), ts=totalScore(target.id);
+    var c1=(kr<=2), c2=(tr>=3), c3=(ks>ts);
+    kill={killer:ASSASSIN_ID,target:target.id,level:target.level,
+          rankK:kr,rankT:tr,scoreK:ks,scoreT:ts,c1:c1,c2:c2,c3:c3,
+          success:!!(c1&&c2&&c3)};
+  }
+  var killSuccess=!!(kill&&kill.success);
+  var activeHolders=holders.filter(function(h){ return !(killSuccess&&h.id===kill.target); });
+
+  /* ---- 赛段进贡（并列算法，见 buildTribute）：后位者出、前位者收；每人最多 6r；收支恒为 0 ---- */
+  var tributePairs=buildTribute(ranked);
+  tributePairs.forEach(function(pr){
+    if(killSuccess&&kill&&pr.from===kill.killer){
+      details[pr.from].push({who:pr.to,type:'进贡（刺客免出）',amt:0});
+      return;
+    }
+    money[pr.to]+=pr.amt; money[pr.from]-=pr.amt;
+    details[pr.to].push({who:pr.from,type:'进贡',amt:pr.amt});
+    details[pr.from].push({who:pr.to,type:'进贡',amt:-pr.amt});
+  });
+  var cleanTies=(ranked[0].score!==ranked[1].score);   /* 兼容字段 */
+
+  /* ---- 赛季敬献（修正）：王【只收不付】(普通人→王 10r)、公收普通人 5r、公→王 5r ---- */
+  var kingH=null, dukeH=null;
+  activeHolders.forEach(function(h){ if(h.level==='king') kingH=h; else if(h.level==='duke') dukeH=h; });
+  var heldMap={}; activeHolders.forEach(function(h){ heldMap[h.id]=true; });
+  function offering(from,to,fee){
+    if(!from||!to||from===to) return;
+    if(killSuccess&&kill&&from===kill.killer){
+      details[from].push({who:to,type:'敬献（刺客免纳贡）',amt:0});
+      return;
+    }
+    money[to]+=fee; money[from]-=fee;
+    details[to].push({who:from,type:'敬献',amt:fee});
+    details[from].push({who:to,type:'敬献',amt:-fee});
+  }
+  ORDER.forEach(function(id){
+    if(heldMap[id]) return;                       /* 王/公本身不付「普通人→王/公」这一档 */
+    if(kingH) offering(id,kingH.id,KING_FEE);     /* 普通人 → 河贼王 10r */
+    if(dukeH) offering(id,dukeH.id,DUKE_FEE);     /* 普通人 → 河贼公 5r */
+  });
+  if(kingH&&dukeH) offering(dukeH.id,kingH.id,DUKE_FEE);   /* 河贼公 → 河贼王 5r */
+  return {ranked:ranked,money:money,details:details,cleanTies:cleanTies,top2:top2,bot2:bot2,
+          kill:kill,holders:holders,activeHolders:activeHolders};
+}
+
+/* =========================================================
+   6. 鼓励语（全篇不出现负面字眼）
+   ========================================================= */
+var POOL={
+  king:'妈的，真牛逼！',
+  receiver:['吾皇万岁！','王公千岁！','王侯将相，宁有种乎'],
+  normal:['👍 十分ok！','稳，继续','这波操作可以'],
+  payer:['王侯将相，宁有种乎？下赛段翻盘','成功完赛，下把搞他']
+};
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function encouragement(id,S){
+  var myLevel=curLevel(id);
+  var killSuccess=!!(S.kill&&S.kill.success);
+  var stillHolder=(myLevel&&!(killSuccess&&S.kill.target===id));
+  if(killSuccess&&S.kill.killer===id) return POOL.king;
+  if(stillHolder) return POOL.king;
+  var order=S.ranked.map(function(r){ return r.id; });
+  var isLast=(order[order.length-1]===id);
+  var net=S.money[id];
+  if(isLast) return pick(POOL.payer);
+  if(net>0) return pick(POOL.receiver);
+  if(net<0) return pick(POOL.payer);
+  return pick(POOL.normal);
+}
+
+/* =========================================================
+   7. 渲染
+   ========================================================= */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function avatarInner(id){
+  var a=state.players[id].avatar;
+  if(a) return '<img src="'+a+'" alt=""/>';
+  return esc(ROSTER[id].char);
+}
+function crownHTML(kind){
+  if(kind==='big') return '<span class="crownwrap big"><span class="crown"></span><span class="band"></span><span class="gem g1"></span><span class="gem g2"></span><span class="gem g3"></span></span>';
+  if(kind==='small') return '<span class="crownwrap small"><span class="crown"></span></span>';
+  return '<span class="crownwrap mini"><span class="crown"></span></span>';
+}
+function crownsInline(id){
+  var p=state.players[id],out='';
+  for(var i=0;i<p.crowns;i++) out+=crownHTML('mini');
+  for(var j=0;j<p.knives;j++) out+='<span class="knife">🔪</span>';
+  return out;
+}
+/* 换头像按钮前面的皇冠 / 刺客小牌 */
+function myBadgeHTML(id){
+  var p=state.players[id],out='';
+  if(p.crowns>0){
+    out+='<span class="mybadge" title="累计皇冠">';
+    for(var i=0;i<p.crowns;i++) out+=crownHTML('mini');
+    out+='</span>';
+  }
+  if(ASSASSIN_ID===id) out+='<span class="mybadge" title="本期刺客"><span class="knife">🔪</span></span>';
+  return out;
+}
+/* 加冕舞台：圆形头像 + 头像框（+ 头顶王冠；刺客时 🔪 挂在 .crownstage 层、头像框右下角外侧） */
+function crownStageHTML(id,lv,knife){
+  return '<div class="crownstage'+(lv?'':' plain')+'">'+
+    (lv? '<div class="cslot">'+crownHTML(lv==='king'?'big':'small')+'</div>' : '')+
+    '<div class="avatarframe">'+avatarInner(id)+'</div>'+
+    (knife?'<span class="avknife">🔪</span>':'')+
+  '</div>';
+}
+
+function renderHeader(){
+  var d=todayDate();
+  $('segLine').textContent='第'+state.segment+'赛段 · '+fmtMD(d)+' · 第 '+currentDay()+'/'+SEGMENT_DAYS+' 天';
+  var sw=$('testSwitch');
+  if(state.testMode) sw.classList.add('on'); else sw.classList.remove('on');
+  var id=me();
+  $('welLine').textContent=(id?'欢迎 '+ROSTER[id].name+' 👋':'欢迎');
+}
+function renderBoard(){
+  var S=computeSettlement();
+  var ul=$('boardList'); ul.innerHTML='';
+  var rank=1;
+  S.ranked.forEach(function(r){
+    var li=document.createElement('li');
+    if(r.id===me()) li.className='me';
+    /* 排行榜只显示：名次 + 头像 + 昵称 + 分数（不显示刺客🔪、也不显示王/公称号）。
+       刺客标记🔪只出现在本人计分器「换头像」按钮旁的徽章里（myBadgeHTML）。 */
+    li.innerHTML='<span class="rk">'+rank+'</span><span class="av">'+avatarInner(r.id)+'</span>'+
+      '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
+      '<span class="pt">'+r.score+'</span>';
+    li.title=ROSTER[r.id].name+'：日常分 '+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score;
+    ul.appendChild(li); rank++;
+  });
+  renderBoardChal();
+}
+/* 排行榜区域的挑战墙：只挂“已经写好（已保存）”的挑战，所有人可见 */
+function renderBoardChal(){
+  var ul=$('boardChal'); if(!ul) return;
+  ul.innerHTML='';
+  var n=0;
+  ORDER.forEach(function(id){
+    var c=state.players[id].challenge||{};
+    var txt=String(c.text||'').trim();
+    if(!txt) return;
+    n++;
+    var li=document.createElement('li');
+    var st=c.done?'<span class="st done">✅已完成 +20</span>':'<span class="st">未完成</span>';
+    li.innerHTML='<span class="nm">'+ROSTER[id].name+'</span><span class="txt">——'+esc(txt)+'</span>'+st;
+    ul.appendChild(li);
+  });
+  if(!n){
+    var e=document.createElement('li'); e.className='empty';
+    e.textContent='还没有人挂挑战'; ul.appendChild(e);
+  }
+}
+/* 挑战栏：只显示自己的 */
+function canEditChallenge(id){
+  var c=state.players[id].challenge||{};
+  if(!c.saved) return true;
+  return ((c.revisions||0)<CHAL_REVISION_LIMIT);
+}
+function renderChallenges(){
+  var box=$('chalList'); if(!box) return;
+  box.innerHTML='';
+  var id=editId(); if(!id) return;
+  var c=state.players[id].challenge||{text:'',done:false,saved:false,revisions:0};
+  var editable=canEditChallenge(id);
+  var draft=(chalDraft[id]!==undefined)?chalDraft[id]:(c.text||'');
+
+  var row=document.createElement('div');
+  row.className='chalrow';
+  row.innerHTML=
+    '<div class="av">'+avatarInner(id)+'</div>'+
+    '<div class="crt"><div class="nm">'+ROSTER[id].name+' 的本期挑战</div>'+
+    '<input type="text" id="chalInput"'+(editable?'':' disabled')+' placeholder="例如：每天走8000步…" value="'+esc(draft)+'"/></div>'+
+    '<label class="ck'+(c.done?'':' off')+'"><input type="checkbox" id="chalDone"'+(c.done?' checked':'')+'/>✅ 完成<br/>+20</label>';
+  box.appendChild(row);
+
+  var tip=editable
+    ? (c.saved?'已保存 · 还能再改 1 次':'填好后点保存（保存后还能再改 1 次）')
+    : '本期挑战已锁定，不能再改了';
+  var bar=document.createElement('div');
+  bar.className='chalbar';
+  bar.innerHTML='<button class="btn-primary" id="btnChalSave"'+(editable?'':' disabled')+'>保 存</button>'+
+                '<div class="lockhint2">'+tip+'</div>';
+  box.appendChild(bar);
+
+  $('btnChalSave').onclick=function(){ saveChallengeText(id); };
+  var inp=$('chalInput');
+  if(inp) inp.addEventListener('input',function(){ chalDraft[id]=this.value; });
+  $('chalDone').addEventListener('change',function(){
+    state.players[id].challenge.done=this.checked;
+    save(); renderAll();
+    toast(this.checked?(ROSTER[id].name+' 挑战完成 +20 分'):(ROSTER[id].name+' 挑战分已撤回 −20 分'));
+  });
+}
+function saveChallengeText(id){
+  var c=state.players[id].challenge;
+  var inp=$('chalInput');
+  var raw=(inp&&typeof inp.value==='string')?inp.value:(chalDraft[id]!==undefined?chalDraft[id]:c.text);
+  var t=String(raw||'').trim();
+  if(!t){ toast('先写一条挑战再保存'); return; }
+  if(!canEditChallenge(id)){ toast('本期挑战已锁定，不能再改了'); return; }
+  if(c.saved) c.revisions=(c.revisions||0)+1;
+  c.text=t; c.saved=true;
+  delete chalDraft[id];
+  save(); renderAll();
+  toast(c.revisions>=1?'✔ 挑战已保存并锁定（本期不能再改）':'✔ 挑战已保存（还能再改 1 次）');
+}
+function renderCounter(){
+  var id=editId();
+  if(!id){ return; }
+  var d=currentDay();
+  var dt=state.players[id].days[d]||{meals:0,weigh:0};
+  var m=dt.meals||0, w=dt.weigh||0;
+  var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH);
+  var mealFull=(m>=MAX_MEALS);          /* ★ 健康餐满 3 顿 → 锁住 */
+  var overWeigh=(w>MAX_WEIGH);
+
+  var who='<div class="av">'+avatarInner(id)+'</div><b>'+ROSTER[id].name+'</b>';
+  who+=myBadgeHTML(id);
+  if(state.testMode&&editTarget&&editTarget!==me()) who+='<span style="font-size:11px;color:#b07a00;font-weight:800;">（测试代填）</span>';
+  if(me()===id&&!editTarget) who+='<button class="btn-ghost" id="btnAvatar" style="padding:4px 9px;font-size:12px;border-radius:9px;margin-left:2px;">换头像</button>';
+  $('counterWho').innerHTML=who;
+
+  var dscore=dailyScore(id), cpts=challengePts(id);
+  $('counterStat').innerHTML=
+    '第 '+d+' 天：健康餐 '+m+'/'+MAX_MEALS+' 餐 <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 上称 '+w+' 次 <span class="cap">（计 '+wc+' 分）</span><br/>'+
+    '本日得分 <b>'+(mc+wc)+'</b> / '+DAY_CAP+' 分 &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
+    '<span class="cap">（日常 '+dscore+' ＋ 挑战 '+cpts+'）</span>'+
+    (mealFull?'<br/><span class="cap">健康餐 '+MAX_MEALS+'/'+MAX_MEALS+' 已满 · 上称可多记但只计 1 分</span>':'')+
+    (overWeigh?'<br/><span class="cap">上称超出部分不计分（每天只计 1 分）</span>':'');
+
+  var sel=$('daySelect');
+  if(sel.options.length!==SEGMENT_DAYS){
+    sel.innerHTML='';
+    for(var k=1;k<=SEGMENT_DAYS;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
+  }
+  sel.value=String(d);
+  sel.disabled=!state.testMode;
+
+  var open=scoringOpen();
+  $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
+  $('btnWeigh').disabled=!open;             /* 上称可一直点（只计 1 分） */
+  $('btnUndo').disabled=!open;
+  $('btnClear').disabled=!open;
+  $('btnSettle').disabled=!settleOpen();
+
+  var hint=$('lockHint');
+  if(!state.testMode&&(!open||!settleOpen())){
+    var msgs=[];
+    if(!open) msgs.push('计分时间 06:00–23:00 之外已锁住（防误触）');
+    if(!settleOpen()) msgs.push('第 '+SEGMENT_DAYS+' 天开放结算');
+    hint.textContent=msgs.join('；');
+    hint.classList.remove('hidden');
+  }else{
+    hint.classList.add('hidden');
+  }
+}
+function renderAll(){
+  LAST_S=computeSettlement();
+  renderHeader(); renderBoard(); renderChallenges(); renderCounter();
+}
+
+/* =========================================================
+   8. 交互
+   ========================================================= */
+function toast(msg){
+  var t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(function(){ t.classList.remove('show'); },1800);
+}
+function addMeal(){
+  if(!scoringOpen()) return;
+  var id=editId(), d=currentDay(), dt=getDay(id,d);
+  var before=(dt.meals||0);
+  if(before>=MAX_MEALS){ toast('健康餐已达上限 '+MAX_MEALS+' 餐'); return; }   /* ★ 锁 3 顿 */
+  dt.meals=Math.min(before+1,MAX_MEALS);
+  undoStack.push({id:id,day:d,field:'meals',delta:dt.meals-before});
+  save(); renderAll();
+}
+function addWeigh(){
+  if(!scoringOpen()) return;
+  var id=editId(), d=currentDay(), dt=getDay(id,d);
+  var before=(dt.weigh||0);
+  dt.weigh=Math.min(before+1,9);
+  undoStack.push({id:id,day:d,field:'weigh',delta:dt.weigh-before});
+  save(); renderAll();
+}
+function undo(){
+  if(!scoringOpen()) return;
+  var a=undoStack.pop();
+  if(!a){ toast('没有可撤销的操作'); return; }
+  var dt=getDay(a.id,a.day);
+  dt[a.field]=Math.max(0,(dt[a.field]||0)-a.delta);
+  save(); renderAll();
+}
+function clearDay(){
+  if(!scoringOpen()) return;
+  var id=editId(), d=currentDay();
+  state.players[id].days[d]={meals:0,weigh:0};
+  undoStack=[];
+  save(); renderAll(); toast('已清空第'+d+'天');
+}
+/* 结算基准（crownBase）：未结算时的皇冠底数（不含任何结算加成）。
+   若已结算过 → 用当前皇冠减去上一次加给前二名的 +1，还原出底数。 */
+function crownBaseSnapshot(){
+  var b={};
+  ORDER.forEach(function(id){ b[id]=state.players[id].crowns; });
+  if(state.settled&&state.lastTop2){
+    state.lastTop2.forEach(function(id){ if(b[id]>0) b[id]=b[id]-1; });
+  }
+  return b;
+}
+/* ★ 点「结算」：每次都按【当前最新排行】重新结算——
+   ① 从基准恢复皇冠（撑销上一次加给前二名的 +1）→ ② 当前前二名各 +1（上限 3）→ ③ 再弹卡片。
+   总分/排名没变时重复点，结果完全一样（幂等），跨多次结算不会无限叠加。 */
+function openSettle(){
+  if(!settleOpen()){ toast('第 '+SEGMENT_DAYS+' 天开放结算'); return; }
+  if(!state.crownBase) state.crownBase=crownBaseSnapshot();
+  var before={};
+  ORDER.forEach(function(id){ before[id]=state.players[id].crowns; });
+  ORDER.forEach(function(id){ state.players[id].crowns=state.crownBase[id]; });
+  var rk=ranking();
+  var top2=[rk[0].id,rk[1].id];
+  var got=[];
+  top2.forEach(function(id){
+    if(state.players[id].crowns<CROWN_MAX){ state.players[id].crowns++; got.push(ROSTER[id].name); }
+  });
+  state.lastTop2=top2;
+  state.settled=true;
+  save();
+  cardPage=1; renderAll(); renderCard();
+  $('settleModal').classList.remove('hidden');
+  var changed=false;
+  ORDER.forEach(function(id){ if(state.players[id].crowns!==before[id]) changed=true; });
+  if(changed) toast('👑 已按最新排行重算：'+(got.length?got.join('、')+' 各 +1':'皇冠已达上限'));
+  else toast('👑 排行未变，皇冠不变');
+}
+function closeSettle(){ $('settleModal').classList.add('hidden'); }
+
+/* =========================================================
+   9. 结算卡片（含加冕：圆形头像 + 头顶王冠）
+   ========================================================= */
+function renderCard(){
+  var S=computeSettlement();
+  LAST_S=S;
+  var id=me();
+  var lv=curLevel(id);
+  var killSuccess=!!(S.kill&&S.kill.success);
+  var isAssassin=!!(S.kill&&S.kill.killer===id);
+  var isHolder=!!(lv&&!(killSuccess&&S.kill.target===id));
+  var net=S.money[id];
+
+  if(cardPage===1){
+    var list=S.details[id].map(function(e){
+      var label=ROSTER[e.who].name+' '+e.type;
+      if(e.amt>0) return '<li><span>'+label+'</span><span class="amt pos">+'+e.amt+'r</span></li>';
+      if(e.amt<0) return '<li><span>'+label+'</span><span class="amt neg">−'+Math.abs(e.amt)+'r</span></li>';
+      return '<li><span>'+label+'</span><span class="amt">0r</span></li>';
+    }).join('');
+    if(!list) list='<li><span>本赛段无进出项</span><span class="amt">0r</span></li>';
+
+    function krow(k,v){ return '<div class="krow"><span>'+k+'</span><b>'+v+'</b></div>'; }
+    /* ★ 刺客卡片：头像【既戴冠又拿刀】——刺客本人有称号(王/公)时按称号戴冠，
+       没称号就只留 🔪。非刺客卡片维持原逻辑（被斩落者不戴冠）。 */
+    var stageLv=isAssassin?lv:(isHolder?lv:null);
+    var stage=crownStageHTML(id,stageLv,isAssassin);
+
+    if(isAssassin){
+      var head=killSuccess?'⚔️ 刺客结算 · 弑君成功':'⚔️ 刺客结算 · 这次没刺杀成功，下次一定';
+      /* ★ 只保留「斩落」一句（成功时），去掉 ①②③ 判定行与得分规则，跟普通卡片一样简洁 */
+      var boxHtml='';
+      if(killSuccess){
+        var zl='你斩落了 '+ROSTER[S.kill.target].name+' 的'+(S.kill.level==='king'?'王位':'称号')+'！';
+        boxHtml='<div class="killbox">'+krow('斩落',zl)+'</div>';
+      }
+
+      var feeLine;
+      if(S.activeHolders.length){
+        feeLine='<div class="privi">📌 本局敬献：'+S.activeHolders.map(function(h){
+          return fullTitle(h.id,h.level)+' 收取 '+((h.level==='king')?KING_FEE:DUKE_FEE)+'r/人';
+        }).join('；')+'</div>';
+      }else{
+        feeLine='<div class="privi">📌 本局敬献：本局既无王也无公，无人收取</div>';
+      }
+      var noteA=killSuccess
+        ? feeLine+'<div class="privi">⚔️ 一刀封喉，王座空悬。下赛段谁来坐？</div>'
+        : feeLine+'<div class="privi">⚔️ 刀已磨亮，下赛段接着来（王侯将相，宁有种乎）</div>';
+      var tagA=(net>0)?' <span style="font-size:14px;">💰 王侯将相，宁有种乎</span>':'';
+
+      $('cardBody').innerHTML=
+        '<h2>'+head+'</h2>'+
+        '<div style="text-align:center;font-weight:800;color:#8a2010;margin:1px 0 2px;">🎉 恭喜你成功完赛【'+state.season+'】</div>'+
+        stage+
+        boxHtml+
+        '<div class="lbl2">你的明细：</div>'+
+        '<ul class="moneylist">'+list+'</ul>'+
+        '<div class="total-line"><span>共计</span><span class="big">'+(net>0?'+':'')+net+'r'+tagA+'</span></div>'+
+        noteA;
+    }else{
+      var title=isHolder?fullTitle(id,lv)
+        :(killSuccess?(S.kill.level==='king'?'本局王位空悬（王被斩落）':'本局公位空悬（公被斩落）'):'（本赛段未加冕）');
+      var tag='';
+      if(isHolder) tag=(lv==='king')?'👑 吾皇万岁！':'👑 王公千岁！';
+      else if(net>0) tag='💰 王侯将相，宁有种乎';
+      var priv='';
+      if(isHolder&&lv==='king') priv='<div class="privi">特权：下赛段第一周大幅加成 · 号令群友 1 次 · 下赛季主题一票决定权</div>';
+      else if(isHolder&&lv==='duke') priv='<div class="privi">特权：下赛段第一周有加成；称号延续到下赛段第一赛段结束</div>';
+
+      $('cardBody').innerHTML=
+        '<h2>🎉 祝贺你成功完赛【'+state.season+'】</h2>'+
+        stage+
+        '<div class="titlebig">称号：'+title+'</div>'+
+        '<div class="lbl2">'+(isHolder?'你将得到：':'你的结算明细：')+'</div>'+
+        '<ul class="moneylist">'+list+'</ul>'+
+        '<div class="total-line"><span>共计</span><span class="big">'+(net>0?'+':'')+net+'r '+tag+'</span></div>'+
+        priv;
+    }
+  }
+  else{
+    var done=state.players[id].challenge.done?1:0;
+    var quote=encouragement(id,S);
+    $('cardBody').innerHTML=
+      '<h2>🎉 祝贺你成功完赛【'+state.season+'】</h2>'+
+      '<div style="text-align:center;font-size:15px;font-weight:900;color:#0b5d3b;margin:6px 0 8px;">本赛季你的记录</div>'+
+      '<div class="recgrid">'+
+        '<div class="r"><span>打卡天数</span><span>'+daysChecked(id)+' / '+SEGMENT_DAYS+' 天</span></div>'+
+        '<div class="r"><span>三餐全勤</span><span>'+fullMealDays(id)+' 天</span></div>'+
+        '<div class="r"><span>上称记录</span><span>'+weighDays(id)+' 天</span></div>'+
+        '<div class="r"><span>挑战完成</span><span>'+done+' 个</span></div>'+
+        '<div class="r"><span>累计皇冠</span><span>'+state.players[id].crowns+' 顶 👑</span></div>'+
+        '<div class="r"><span>总分</span><span>'+totalScore(id)+' 分</span></div>'+
+      '</div>'+
+      '<div class="quote">💬 “'+quote+'”</div>';
+  }
+
+  var dots=$('cardDots').children;
+  dots[0].className=(cardPage===1?'on':''); dots[1].className=(cardPage===2?'on':'');
+  $('cardPrev').disabled=(cardPage===1);
+  $('cardNext').disabled=(cardPage===2);
+}
+
+/* =========================================================
+   10. 登录 / 登出
+   ========================================================= */
+function showLogin(){
+  $('loginScreen').classList.remove('hidden');
+  $('mainScreen').classList.add('hidden');
+}
+function showMain(){
+  $('loginScreen').classList.add('hidden');
+  $('mainScreen').classList.remove('hidden');
+  editTarget=null;
+  renderAll();
+}
+function loginAs(id){
+  state.currentUser=id; editTarget=null; undoStack=[]; chalDraft={};
+  save(); showMain(); toast('欢迎，'+ROSTER[id].name+'！');
+}
+function logout(){
+  state.currentUser=null; editTarget=null; chalDraft={};
+  save(); showLogin();
+}
+
+/* =========================================================
+   11. 设置面板
+   ========================================================= */
+function openSettings(){
+  var opts=function(sel,cur,label){
+    sel.innerHTML='<option value="">'+label+'：无</option>';
+    ORDER.forEach(function(id){ var o=document.createElement('option'); o.value=id; o.textContent=label+'：'+ROSTER[id].name; sel.appendChild(o); });
+    sel.value=cur||'';
+  };
+  opts($('setKing'),state.segTitle.king,'河贼王');
+  opts($('setDuke'),state.segTitle.duke,'河贼公');
+  $('setStart').value=state.segStart;
+  $('settingsModal').classList.remove('hidden');
+}
+function closeSettings(){ $('settingsModal').classList.add('hidden'); }
+
+/* ---- 重置：自建二次确认弹窗 + 彻底清空回初始 ---- */
+function openConfirm(){
+  closeSettle();                       /* 若结算卡片开着，先关，避免遮罩叠层 */
+  $('confirmModal').classList.remove('hidden');
+}
+function closeConfirm(){ $('confirmModal').classList.add('hidden'); }
+function doReset(){
+  /* 1) 状态整体回初始：头像/每日分/挑战(text,done,saved,revisions)/皇冠+刀/刺客/
+        settled/crownBase/lastTop2/currentUser/segTitle/titleAuto/dayOverride 全部重置 */
+  state=freshState();
+  /* 2) 内存里的临时变量也一并清空 */
+  chalDraft={}; editTarget=null; undoStack=[]; cardPage=1; LAST_S=null;
+  /* 3) 本机存储清干净后再写回初始状态（刷新后仍是初始） */
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  save();
+  /* 4) 关掉所有面板，回到登录页 */
+  closeConfirm(); closeSettings(); closeSettle();
+  showLogin();
+  toast('已恢复初始状态');
+}
+/* ---- 备份：赛季/赛段变更时自动快照（见文件顶部 writeBackup/checkRollover）；无 UI 按钮 ---- */
+function isOurState(o){
+  if(!o||typeof o!=='object'||Array.isArray(o)) return false;
+  if(!o.players||typeof o.players!=='object') return false;
+  for(var i=0;i<ORDER.length;i++){ var p=o.players[ORDER[i]]; if(!p||typeof p!=='object') return false; }
+  return true;
+}
+function applySettings(){
+  var k=$('setKing').value||null, d=$('setDuke').value||null;
+  if(k&&k===d) d=null;
+  /* 手工选过 → 临时覆盖自动称号；两个都留空 → 交回自动 */
+  if(k||d){ state.segTitle={king:k,duke:d}; state.titleAuto=false; }
+  else{ state.titleAuto=true; }
+  if($('setStart').value) state.segStart=$('setStart').value;
+  state.assassin=ASSASSIN_ID;         /* ★ 本期刺客固定为芋头，设置面板不可改 */
+  state.segment=SEG_NO;
+  save(); renderAll();
+}
+
+/* =========================================================
+   12. 绑定
+   ========================================================= */
+function bind(){
+  /* 快捷登录：只有四个名牌，点一下就进 */
+  var qg=$('quickGrid');
+  ORDER.forEach(function(id){
+    var b=document.createElement('button');
+    b.className='quick-btn';
+    b.innerHTML='<span class="av">'+ROSTER[id].char+'</span><span>'+ROSTER[id].name+'</span>';
+    b.onclick=function(){ loginAs(id); };
+    qg.appendChild(b);
+  });
+
+  $('btnLogout').onclick=logout;
+  $('btnMeal').onclick=addMeal;
+  $('btnWeigh').onclick=addWeigh;
+  $('btnUndo').onclick=undo;
+  $('btnClear').onclick=clearDay;
+  $('btnSave').onclick=function(){ save(); toast('已保存到本机'); };
+  $('btnSettle').onclick=openSettle;
+
+  $('daySelect').onchange=function(){
+    if(!state.testMode){ renderCounter(); return; }
+    state.dayOverride=parseInt(this.value,10); undoStack=[];
+    save(); renderAll();
+  };
+  $('testSwitch').onclick=function(){
+    state.testMode=!state.testMode;
+    if(!state.testMode) editTarget=null;
+    save(); renderAll();
+    toast(state.testMode?'测试模式：计分键 + 结算键均可点':'正式模式：按时间锁住');
+  };
+
+  function pickAvatar(){
+    var id=editId();
+    var inp=document.createElement('input');
+    inp.type='file'; inp.accept='image/*';
+    inp.onchange=function(){
+      var f=inp.files&&inp.files[0]; if(!f) return;
+      var fr=new FileReader();
+      fr.onload=function(){ state.players[id].avatar=fr.result; save(); renderAll(); toast('头像已更新'); };
+      fr.readAsDataURL(f);
+    };
+    inp.click();
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.closest&&e.target.closest('#btnAvatar')){ pickAvatar(); }
+  });
+
+  $('settleClose').onclick=closeSettle;
+  $('cardPrev').onclick=function(){ if(cardPage>1){ cardPage--; renderCard(); } };
+  $('cardNext').onclick=function(){ if(cardPage<2){ cardPage++; renderCard(); } };
+
+  $('btnGear').onclick=openSettings;
+  $('setClose').onclick=function(){ applySettings(); closeSettings(); };
+  $('setKing').onchange=applySettings;
+  $('setDuke').onchange=applySettings;
+  $('setStart').onchange=applySettings;
+  $('setAutoTitle').onclick=function(){ state.titleAuto=true; state.segTitle={king:null,duke:null}; save(); renderAll(); openSettings(); toast('已切回自动称号'); };
+  $('setToggleTest').onclick=function(){ state.testMode=!state.testMode; save(); renderAll(); openSettings(); };
+  $('btnReset').onclick=openConfirm;
+  $('confirmCancel').onclick=closeConfirm;
+  $('confirmOk').onclick=doReset;
+  $('confirmModal').addEventListener('click',function(e){ if(e.target===this) closeConfirm(); });
+
+  $('settleModal').addEventListener('click',function(e){ if(e.target===this) closeSettle(); });
+  $('settingsModal').addEventListener('click',function(e){ if(e.target===this){ applySettings(); closeSettings(); } });
+}
+
+/* =========================================================
+   13. 启动
+   ========================================================= */
+function boot(){
+  bind();
+  if(state.currentUser&&ROSTER[state.currentUser]){ showMain(); }
+  else{ showLogin(); }
+}
+boot();
+
+/* =========================================================
+   14. 调试 / 自测接口（控制台用）
+   ========================================================= */
+window.APP={
+  get state(){ return state; },
+  save:save, renderAll:renderAll, computeSettlement:computeSettlement, ranking:ranking,
+  totalScore:totalScore, dailyScore:dailyScore, challengePts:challengePts, dayScore:dayScore,
+  login:function(id){ if(ROSTER[id]) loginAs(id); },
+  logout:logout,
+  _day:function(){ return currentDay(); },
+  _setDay:function(n){ state.dayOverride=n; save(); renderAll(); },
+  _crowns:function(map){
+    if(!state.crownBase){ state.crownBase={}; ORDER.forEach(function(id){ state.crownBase[id]=state.players[id].crowns; }); }
+    ORDER.forEach(function(id){ if(map[id]!==undefined){ var v=Math.max(0,Math.min(CROWN_MAX,map[id])); state.players[id].crowns=v; state.crownBase[id]=v; } });
+    save(); renderAll();
+  },
+  _resetCrownBase:function(){ state.crownBase=null; state.lastTop2=null; state.settled=false; save(); renderAll(); },
+  _assassin:function(id){ state.assassin=ASSASSIN_ID; save(); renderAll(); },
+  _title:function(level,holder){
+    state.segTitle={king:(level==='king'?holder:null),duke:(level==='duke'?holder:null)};
+    state.titleAuto=!!level&&!!holder; save(); renderAll();
+  },
+  _titles:function(king,duke){
+    state.segTitle={king:king||null,duke:(duke&&duke!==king)?duke:null};
+    state.titleAuto=!!(king||duke); save(); renderAll();
+  },
+  _autoTitles:function(){ state.titleAuto=true; save(); renderAll(); },
+  _chal:function(id,text,done){
+    if(!ROSTER[id]) return;
+    state.players[id].challenge={text:text||'',done:!!done,saved:!!text,revisions:0};
+    save(); renderAll();
+  },
+  _add:function(kind){ if(kind==='weigh') addWeigh(); else addMeal(); },
+  _clear:function(){ clearDay(); },
+  _openSettle:function(){ openSettle(); },
+  _page:function(n){ cardPage=n; renderCard(); },
+  backupNow:backupNow,
+  /** 查看某赛季/赛段已自动备份的快照（无 UI 入口，控制台用） */
+  _backups:function(season,segment){
+    var key=backupKey((season===undefined?state.season:season),(segment===undefined?state.segment:segment));
+    var raw=localStorage.getItem(key), a=[];
+    try{ var p=raw?JSON.parse(raw):[]; if(Array.isArray(p)) a=p; }catch(e){}
+    return {key:key,count:a.length,items:a};
+  },
+  _buildTribute:buildTribute,
+  /** 自测辅助：直接以文本导入（走与文件导入相同的校验逻辑） */
+  _importText:function(txt){
+    var parsed;
+    try{ parsed=JSON.parse(String(txt)); }catch(e){ return 'ERROR:不是合法JSON'; }
+    if(!isOurState(parsed)) return 'ERROR:不是本应用备份';
+    state=migrate(parsed); chalDraft={}; editTarget=null; undoStack=[]; save();
+    if(state.currentUser&&ROSTER[state.currentUser]) showMain(); else showLogin();
+    return 'OK';
+  },
+  _settled:function(v){ state.settled=!!v; save(); },
+  /** 测试辅助：把四人总分直接设成指定值（仅用于核对结算） */
+  _testSetTotals:function(map){
+    ORDER.forEach(function(id){
+      state.players[id].days={};
+      state.players[id].challenge={text:'',done:false,saved:false,revisions:0};
+    });
+    ORDER.forEach(function(id){
+      var t=map[id]||0;
+      if(t<0) t=0;
+      for(var d=1;d<=SEGMENT_DAYS&&t>0;d++){
+        var take=Math.min(DAY_CAP,t);
+        var meals=Math.min(MAX_MEALS,take);
+        var weigh=take-meals;
+        state.players[id].days[d]={meals:meals,weigh:weigh};
+        t-=take;
+      }
+      if(t>0){ state.players[id].challenge={text:'测试',done:true,saved:true,revisions:0}; }
+    });
+    state.settled=false;
+    save(); renderAll();
+    return ORDER.map(function(id){ return id+':'+totalScore(id); }).join(' | ');
+  }
+};
+})();
+</script>
+</body>
+</html>
