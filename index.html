@@ -218,7 +218,13 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 /* 设置面板 */
 .setrow{margin:11px 0;}
 .setrow label{display:block;font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:5px;}
-.setrow select,.setrow input[type=date],.setrow input[type=number]{width:100%;padding:10px;border-radius:9px;border:2px solid var(--line);font-size:14.5px;font-weight:700;font-family:inherit;background:#fff;}
+.setrow select,.setrow input[type=date],.setrow input[type=number],.setrow input[type=password]{width:100%;padding:10px;border-radius:9px;border:2px solid var(--line);font-size:14.5px;font-weight:700;font-family:inherit;background:#fff;}
+/* ☁ 云同步状态行 */
+.syncstatus{margin-top:8px;padding:8px 10px;border-radius:10px;background:#f2f8f4;border:1px solid #d8e8de;color:#28543c;font-size:12.5px;font-weight:800;line-height:1.45;word-break:break-all;}
+.syncstatus .syncwhen{font-weight:700;opacity:.72;margin-top:2px;}
+.syncstatus.ok{background:#eef7f1;border-color:#cdeadd;color:#0d5c30;}
+.syncstatus.busy{background:#fff8e2;border-color:#e8cf86;color:#a8720a;}
+.syncstatus.err{background:#fff2f2;border-color:#f0b7b7;color:#a01b1b;}
 .setrow .inline{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .dangerbtn{width:100%;padding:12px;border-radius:11px;background:#fff0f0;border:2px solid #f0b7b7;color:#a01b1b;font-weight:800;font-size:14.5px;}
 
@@ -341,6 +347,22 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     </div>
 
     <div class="setrow">
+      <label>☁ 数据同步（四人共享同一份数据）</label>
+      <div class="note" style="margin-top:0;">粘一次 <b>GitHub 令牌</b>（Personal access token：经典令牌勾 <b>repo</b>；细粒度令牌给 <b>Contents: Read and write</b>）。令牌只存在<b>本机浏览器</b>里，<b>不会</b>写进仓库或页面源码。四个人、每台设备各粘一次即可。</div>
+      <input type="password" id="setToken" autocomplete="off" spellcheck="false" placeholder="粘贴 GitHub 令牌（ghp_… / github_pat_…）"/>
+      <div class="inline" style="margin-top:8px;">
+        <button class="btn-ghost" id="btnTokenSave">保存钥匙</button>
+        <button class="btn-ghost" id="btnTokenClear">清除钥匙</button>
+      </div>
+      <div class="syncstatus" id="syncStatus">未配置钥匙：需要在设置里粘贴 GitHub 令牌</div>
+      <div class="inline" style="margin-top:8px;">
+        <button class="btn-ghost" id="btnSyncPush">↻ 立即同步（上传）</button>
+        <button class="btn-ghost" id="btnSyncPull">⬇ 拉取云端数据</button>
+      </div>
+      <div class="note" style="margin-top:8px;">自动同步：改分 / 点保存后 <b>2 秒</b>自动上传；页面开着时每 <b>8 秒</b>查一次云端（画面不可见就停）。冲突按 <b>updatedAt（最后改动时间）</b>取新的那份，不会无脑覆盖。</div>
+    </div>
+
+    <div class="setrow">
       <label>测试模式</label>
       <button class="btn-ghost" id="setToggleTest" style="width:100%;">切换</button>
     </div>
@@ -416,6 +438,7 @@ function freshState(){
   return {
     season:SEASON,
     segment:SEG_NO,
+    updatedAt:0,                 /* ★ 本地最后变更时间（毫秒）；0 = 本机从来没改过（用于云端同步取新） */
     segStart:'2026-10-12',
     players:players,
     currentUser:null,
@@ -434,6 +457,7 @@ function migrate(s){
   var base=freshState();
   base.season=SEASON;                 /* ★ 赛季以代码常量为准（改了 SEASON 即切换，变更前的已自动备份） */
   base.segment=SEG_NO;
+  base.updatedAt=Number(s.updatedAt)||0;      /* ★ 云端同步用：沿用原值，别在迁移时刷新 */
   base.segStart=s.segStart||'2026-10-12';
   base.currentUser=s.currentUser||null;
   base.testMode=(s.testMode===undefined)?true:!!s.testMode;
@@ -528,8 +552,30 @@ function load(){
     return migrate(JSON.parse(raw));
   }catch(e){ return freshState(); }
 }
-function save(){
+/* ★ 内容指纹：忽略 updatedAt，用来判断「这次 save 是不是真把数据改了」。
+   头像（可能几 MB 的 base64）只取长度+前 40 字做指纹，避免每次点 +1 都做一次大字符串拷贝。 */
+var lastSig='';
+function stateSig(){
+  try{
+    return JSON.stringify(state,function(k,v){
+      if(k==='updatedAt') return undefined;
+      if(k==='avatar'&&typeof v==='string') return '#'+v.length+':'+v.slice(0,40);
+      return v;
+    });
+  }catch(e){ return ''; }
+}
+/* save(opt)：opt.quiet=true → 只落盘，不刷新 updatedAt、不触发自动上传
+   （登入/登出/应用云端数据时用，避免把本机「较旧」的数据盖到云端） */
+function save(opt){
+  var quiet=!!(opt&&opt.quiet);
+  var sig=stateSig();
+  var changed=(sig!==lastSig);
+  if(!quiet&&changed) state.updatedAt=Date.now();     /* ★ 每次本地变更刷新 updatedAt */
   try{ localStorage.setItem(STORE_KEY,JSON.stringify(state)); }catch(e){}
+  if(changed){
+    lastSig=sig;
+    if(!quiet&&!SYNC.applying) schedulePush();        /* 防抖 2 秒 → 自动上传 */
+  }
 }
 checkRollover();   /* ★ 先做变更检测，再读状态 */
 var state=load();
@@ -1186,11 +1232,13 @@ function showMain(){
 }
 function loginAs(id){
   state.currentUser=id; editTarget=null; undoStack=[]; chalDraft={};
-  save(); showMain(); toast('欢迎，'+ROSTER[id].name+'！');
+  save({quiet:true});          /* ★ 登录状态是本机的事：不刷 updatedAt，也不触发上传 */
+  showMain(); toast('欢迎，'+ROSTER[id].name+'！');
+  if(SYNC.token) doPull({});
 }
 function logout(){
   state.currentUser=null; editTarget=null; chalDraft={};
-  save(); showLogin();
+  save({quiet:true}); showLogin();
 }
 
 /* =========================================================
@@ -1205,6 +1253,12 @@ function openSettings(){
   opts($('setKing'),state.segTitle.king,'河贼王');
   opts($('setDuke'),state.segTitle.duke,'河贼公');
   $('setStart').value=state.segStart;
+  var ti=$('setToken');
+  if(ti){
+    ti.value='';
+    ti.placeholder=SYNC.token?'已保存钥匙（本机）· 粘贴新令牌可替换':'粘贴 GitHub 令牌（ghp_… / github_pat_…）';
+  }
+  syncRenderStatus();
   $('settingsModal').classList.remove('hidden');
 }
 function closeSettings(){ $('settingsModal').classList.add('hidden'); }
@@ -1319,10 +1373,409 @@ function bind(){
 }
 
 /* =========================================================
+   ☁ 云端同步（GitHub 仓库里的 cloud.json · 四端共享同一份数据）
+   ---------------------------------------------------------
+   权威源 = 同仓库文件 cloud.json（内容 = 完整 state）
+   读：GET api.github.com/repos/.../contents/cloud.json（公开仓库，无需鉴权）
+   写：PUT 同路径，带 Authorization: Bearer <token>
+   令牌只存本机 localStorage（jianfei_gh_token）——绝不写进页面/仓库任何文件
+   ========================================================= */
+var SYNC={
+  TOKEN_KEY:'jianfei_gh_token',                       /* ★ 令牌只存在这里（浏览器本机） */
+  API:'https://api.github.com/repos/stmelthn/jianfei-daka/contents/cloud.json',
+  POLL_MS:8000,          /* 页面可见时每 8 秒查一次云端 */
+  BACKOFF_MS:60000,      /* 钥匙无效/无权限时退避到 60 秒一次 */
+  DEBOUNCE_MS:2000,      /* 本地改分后防抖 2 秒自动上传 */
+  AVATAR_LIMIT:200*1024, /* 单个头像超过 200KB → 上传前压缩 */
+  CLOUD_LIMIT:900*1024,  /* 整个 cloud.json 超过 900KB → 提示清头像 */
+  token:'', kind:'none', msg:'', lastSync:0,
+  authFailed:false, pollTimer:null, pushTimer:null,
+  pushing:false, pulling:false, queued:false, remoteSha:null
+};
+
+/* ---------- base64（UTF-8 安全）---------- */
+function b64Encode(str){
+  var s=String(str);
+  try{ return btoa(unescape(encodeURIComponent(s))); }
+  catch(e){}
+  try{
+    var u=new TextEncoder().encode(s), bin='';
+    for(var i=0;i<u.length;i++) bin+=String.fromCharCode(u[i]);
+    return btoa(bin);
+  }catch(e2){ return ''; }
+}
+function b64Decode(b64){
+  var clean=String(b64||'').replace(/[\s\r\n]/g,'');
+  var bin=atob(clean);
+  try{ return decodeURIComponent(escape(bin)); }catch(e){}
+  try{
+    if(window.TextDecoder){
+      var u=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+      return new TextDecoder('utf-8').decode(u);
+    }
+  }catch(e2){}
+  return bin;
+}
+function utf8Bytes(s){ try{ return unescape(encodeURIComponent(String(s))).length; }catch(e){ return String(s).length; } }
+function two(n){ return (n<10?'0':'')+n; }
+
+/* ---------- 状态行 ---------- */
+function syncRenderStatus(){
+  var el=document.getElementById('syncStatus');
+  if(!el) return;
+  var kind=SYNC.kind;
+  var line=SYNC.msg;
+  if(!SYNC.token){ kind='err'; line='未配置钥匙：需要在设置里粘贴 GitHub 令牌'; }
+  if(!line) line=(SYNC.token?'已连接':'未配置钥匙：需要在设置里粘贴 GitHub 令牌');
+  var cls='syncstatus';
+  if(kind==='ok') cls+=' ok'; else if(kind==='busy') cls+=' busy'; else if(kind==='err') cls+=' err';
+  var t='上次同步：—';
+  if(SYNC.lastSync){
+    var d=new Date(SYNC.lastSync);
+    t='上次同步：'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+two(d.getHours())+':'+two(d.getMinutes())+':'+two(d.getSeconds());
+  }
+  el.className=cls;
+  el.innerHTML='<div>'+esc(line)+'</div><div class="syncwhen">'+esc(t)+'</div>';
+}
+function syncSet(kind,msg){
+  if(kind) SYNC.kind=kind;
+  if(msg!==undefined&&msg!==null) SYNC.msg=String(msg);
+  syncRenderStatus();
+}
+
+/* ---------- 令牌 ---------- */
+function syncLoadToken(){
+  try{ SYNC.token=(localStorage.getItem(SYNC.TOKEN_KEY)||'').trim(); }catch(e){ SYNC.token=''; }
+}
+function syncSetToken(t){
+  t=String(t||'').trim();
+  if(!t) return false;
+  SYNC.token=t; SYNC.authFailed=false;
+  try{ localStorage.setItem(SYNC.TOKEN_KEY,t); }catch(e){}
+  syncSet('ok','钥匙已保存（只存在本机浏览器，不会写进仓库）');
+  return true;
+}
+function syncClearToken(){
+  SYNC.token=''; SYNC.authFailed=false; SYNC.remoteSha=null;
+  try{ localStorage.removeItem(SYNC.TOKEN_KEY); }catch(e){}
+  clearTimeout(SYNC.pushTimer); clearTimeout(SYNC.pollTimer); SYNC.pollTimer=null;
+  syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
+}
+
+/* ---------- HTTP ---------- */
+function ghHeaders(auth){
+  var h={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+  if(auth&&SYNC.token) h['Authorization']='Bearer '+SYNC.token;
+  return h;
+}
+function httpErr(r){
+  var e=new Error('HTTP '+r.status); e.status=r.status;
+  return r.text().then(function(t){ e.body=t; return e; },function(){ return e; }).then(function(er){ throw er; });
+}
+/* 读云端：404 = 文件还不存在（sha 为 null，直接新建） */
+function cloudGet(){
+  return fetch(SYNC.API+'?ts='+Date.now(),{method:'GET',headers:ghHeaders(true),cache:'no-store'}).then(function(r){
+    if(r.status===404) return {exists:false,sha:null,json:null};
+    if(!r.ok) return httpErr(r);
+    return r.json().then(function(j){
+      var txt='';
+      try{ txt=b64Decode(j&&j.content); }catch(e){ txt=''; }
+      var parsed=null;
+      try{ parsed=JSON.parse(txt); }catch(e){ parsed=null; }
+      return {exists:true,sha:(j&&j.sha)||null,json:parsed};
+    });
+  });
+}
+/* 写云端：必须先拿到 sha（否则 409） */
+function cloudPut(text,sha,msg){
+  var body={message:msg||('jianfei sync '+new Date().toISOString()),content:b64Encode(text)};
+  if(sha) body.sha=sha;
+  var h=ghHeaders(true); h['Content-Type']='application/json';
+  return fetch(SYNC.API,{method:'PUT',headers:h,body:JSON.stringify(body)}).then(function(r){
+    if(!r.ok) return httpErr(r);
+    return r.json();
+  });
+}
+
+/* ---------- 头像压缩 / 上传体积检查 ---------- */
+function avatarBytes(a){
+  if(!a||typeof a!=='string') return 0;
+  var i=a.indexOf(',');
+  var b=(i>=0)?a.slice(i+1):a;
+  var pad=0;
+  while(b.length-pad>0&&b.charAt(b.length-1-pad)==='=') pad++;
+  return Math.max(0,Math.floor(b.length*3/4)-pad);
+}
+function compressAvatar(src){
+  return new Promise(function(resolve){
+    var done=false;
+    function fin(v){ if(!done){ done=true; resolve(v); } }
+    try{
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+          if(!w||!h) return fin(src);
+          var sc=Math.min(1,240/Math.max(w,h));                 /* 最长边 ≤ 240px */
+          var cw=Math.max(1,Math.round(w*sc)), ch=Math.max(1,Math.round(h*sc));
+          var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+          var cx=cv.getContext('2d');
+          cx.fillStyle='#ffffff'; cx.fillRect(0,0,cw,ch);       /* jpeg 无透明通道，先铺白底 */
+          cx.drawImage(img,0,0,cw,ch);
+          var out=cv.toDataURL('image/jpeg',0.7);
+          fin((out&&out.length<src.length)?out:src);
+        }catch(e){ fin(src); }
+      };
+      img.onerror=function(){ fin(src); };
+      img.src=src;
+    }catch(e){ fin(src); }
+  });
+}
+function buildCloudPayload(){
+  var snap;
+  try{ snap=JSON.parse(JSON.stringify(state)); }catch(e){ return Promise.resolve({error:'本地数据无法序列化'}); }
+  snap.updatedAt=Number(state.updatedAt)||Date.now();
+  var jobs=[];
+  ORDER.forEach(function(id){
+    var a=snap.players[id]&&snap.players[id].avatar;
+    if(a&&avatarBytes(a)>SYNC.AVATAR_LIMIT) jobs.push(id);
+  });
+  var chain=Promise.resolve();
+  jobs.forEach(function(id){
+    chain=chain.then(function(){
+      return compressAvatar(snap.players[id].avatar).then(function(na){
+        snap.players[id].avatar=na;
+        console.log('[同步] 头像压缩：'+ROSTER[id].name+' → '+Math.round(avatarBytes(na)/1024)+'KB');
+      });
+    });
+  });
+  return chain.then(function(){
+    var text=JSON.stringify(snap);
+    var bytes=utf8Bytes(text);
+    return {text:text,bytes:bytes,oversize:bytes>SYNC.CLOUD_LIMIT,compressed:jobs};
+  });
+}
+
+/* ---------- 本地是否有实质数据（判断首次同步方向）---------- */
+function stateHasData(s){
+  if(!s||typeof s!=='object') return false;
+  if(Number(s.updatedAt)>0) return true;
+  if(s.settled) return true;
+  for(var i=0;i<ORDER.length;i++){
+    var p=s.players&&s.players[ORDER[i]];
+    if(!p) continue;
+    if(p.avatar) return true;
+    var c=p.challenge;
+    if(c&&(c.text||c.done||c.saved)) return true;
+    for(var d=1;d<=SEGMENT_DAYS;d++){
+      var dt=p.days&&p.days[d];
+      if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0)) return true;
+    }
+  }
+  return false;
+}
+
+/* ---------- 应用云端数据（按 updatedAt 取新后用）---------- */
+function applyRemote(remote){
+  if(!remote||!isOurState(remote)) return false;
+  var keepUser=state.currentUser, keepTest=state.testMode, keepDay=state.dayOverride;
+  SYNC.applying=true;
+  try{
+    state=migrate(remote);
+    state.updatedAt=Number(remote.updatedAt)||0;
+    /* ★ 这几项是「本机自己的」：登录身份 / 测试模式 / 正在填第几天，不跟着云端串。
+       本机没登录过就老老实实回登录页，别把人塞进别人的身份里。 */
+    state.currentUser=ROSTER[keepUser]?keepUser:null;
+    state.testMode=keepTest;
+    state.dayOverride=keepDay;
+    chalDraft={}; editTarget=null; undoStack=[];
+    save({quiet:true});
+    if(state.currentUser&&ROSTER[state.currentUser]) showMain(); else showLogin();
+    renderAll();
+    toast('已同步云端数据');
+    return true;
+  }finally{ SYNC.applying=false; }
+}
+
+/* ---------- 上传（先 GET 拿 sha / 先比 updatedAt）---------- */
+function doUpload(opt){
+  opt=opt||{};
+  if(!SYNC.token){ syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌'); if(opt.manual) toast('还没配置钥匙：设置里粘贴 GitHub 令牌'); return Promise.resolve(false); }
+  if(SYNC.pushing){ SYNC.queued=true; return Promise.resolve(false); }
+  SYNC.pushing=true;
+  syncSet('busy','同步中…（上传）');
+  return buildCloudPayload().then(function(p){
+    if(p.error){ syncSet('err',p.error); return false; }
+    if(p.oversize){
+      var m='数据过大，建议清掉头像再同步（云端文件约 '+Math.round(p.bytes/1024)+'KB）';
+      syncSet('err',m);
+      if(opt.manual) toast('数据过大，建议清掉头像再同步');
+      return false;
+    }
+    return cloudGet().then(function(res){
+      var remote=res.exists?res.json:null;
+      var rU=(remote&&Number(remote.updatedAt))||0;
+      var lU=Number(state.updatedAt)||0;
+      if(remote&&isOurState(remote)&&stateHasData(remote)&&rU>lU&&!opt.force){
+        applyRemote(remote);
+        syncSet('ok','云端数据较新，已改为拉取');
+        if(opt.manual) toast('云端数据较新，已改为拉取');
+        return false;
+      }
+      return cloudPut(p.text,res.sha,msgOf(p)).then(function(j){
+        SYNC.remoteSha=(j&&j.content&&j.content.sha)||res.sha||null;
+        SYNC.authFailed=false; SYNC.lastSync=Date.now();
+        syncSet('ok',(p.compressed&&p.compressed.length)?('已连接 · 已上传（压缩了 '+p.compressed.length+' 个头像）'):'已连接 · 已上传到云端');
+        if(opt.manual) toast('☁ 已上传到云端');
+        return true;
+      },function(e){
+        if(e&&e.status===409){                      /* 别人刚改过 → 重取 sha 再传一次 */
+          return cloudGet().then(function(res2){
+            return cloudPut(p.text,res2.sha,msgOf(p)).then(function(j){
+              SYNC.remoteSha=(j&&j.content&&j.content.sha)||res2.sha||null;
+              SYNC.authFailed=false; SYNC.lastSync=Date.now();
+              syncSet('ok','已连接 · 已上传（重试成功）');
+              if(opt.manual) toast('☁ 已上传到云端');
+              return true;
+            });
+          });
+        }
+        return Promise.reject(e);
+      });
+    });
+  }).then(function(ok){
+    SYNC.pushing=false;
+    if(SYNC.queued){ SYNC.queued=false; schedulePush(); }
+    schedulePoll();
+    return ok;
+  },function(e){
+    SYNC.pushing=false;
+    var st=e&&e.status;
+    if(st===401||st===403){ SYNC.authFailed=true; syncSet('err','钥匙无效或无权限'); }
+    else if(st===422){ syncSet('err','数据过大，建议清掉头像再同步'); }
+    else{ syncSet('err','同步失败：'+((e&&e.message)||'网络异常')); }
+    if(opt.manual) toast('上传失败：'+(st?('HTTP '+st):'网络异常'));
+    schedulePoll();
+    return false;
+  });
+}
+function msgOf(p){ return 'jianfei sync '+(p&&p.compressed&&p.compressed.length?'(compressed avatars) ':'')+new Date().toLocaleString(); }
+
+/* ---------- 拉取（云端更新才覆盖本地）---------- */
+function doPull(opt){
+  opt=opt||{};
+  if(!SYNC.token){ syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌'); if(opt.manual) toast('还没配置钥匙：设置里粘贴 GitHub 令牌'); return Promise.resolve(false); }
+  if(SYNC.pulling||SYNC.pushing) return Promise.resolve(false);
+  SYNC.pulling=true;
+  syncSet('busy','同步中…（拉取）');
+  return cloudGet().then(function(res){
+    if(!res.exists){                               /* 云端为空 → 把本地的传上去（本地没内容就不动） */
+      if(stateHasData(state)){ SYNC.pulling=false; return doUpload({force:true}); }
+      SYNC.lastSync=Date.now(); syncSet('ok','已连接 · 云端暂无数据');
+      if(opt.manual) toast('云端暂无数据');
+      return false;
+    }
+    var remote=res.json;
+    if(!isOurState(remote)){ syncSet('err','云端数据格式异常（已忽略）'); if(opt.manual) toast('云端数据格式异常，已忽略'); return false; }
+    SYNC.remoteSha=res.sha;
+    var rU=Number(remote.updatedAt)||0, lU=Number(state.updatedAt)||0;
+    var ld=stateHasData(state), rd=stateHasData(remote);
+    if(rd&&(!ld||rU>lU)){                           /* 云端更新（或本地还是空的）→ 覆盖本地 */
+      applyRemote(remote);
+      SYNC.authFailed=false; SYNC.lastSync=Date.now();
+      syncSet('ok','已连接 · 已同步云端数据');
+      return true;
+    }
+    SYNC.authFailed=false; SYNC.lastSync=Date.now();
+    if(ld&&lU>rU){
+      syncSet('ok','已连接 · 本机较新，稍后自动上传'); schedulePush();
+      if(opt.manual) toast('本机数据较新，未覆盖（已安排上传）');
+      return false;
+    }
+    syncSet('ok','已连接 · 已是最新');
+    if(opt.manual) toast('☁ 已是最新，无需更新');
+    return false;
+  },function(e){
+    var st=e&&e.status;
+    if(st===401||st===403){ SYNC.authFailed=true; syncSet('err','钥匙无效或无权限'); }
+    else syncSet('err','同步失败：'+((e&&e.message)||'网络异常'));
+    if(opt.manual) toast('拉取失败：'+(st?('HTTP '+st):'网络异常'));
+    return false;
+  }).then(function(r){
+    SYNC.pulling=false;
+    schedulePoll();
+    return r;
+  });
+}
+
+/* ---------- 定时器 ---------- */
+function schedulePush(){
+  if(SYNC.applying) return;
+  if(!SYNC.token){ syncRenderStatus(); return; }
+  clearTimeout(SYNC.pushTimer);
+  SYNC.pushTimer=setTimeout(function(){ doUpload({}); },SYNC.DEBOUNCE_MS);
+}
+function schedulePoll(){
+  clearTimeout(SYNC.pollTimer);
+  var delay=SYNC.authFailed?SYNC.BACKOFF_MS:SYNC.POLL_MS;
+  SYNC.pollTimer=setTimeout(function(){
+    if(SYNC.token&&document.visibilityState==='visible') doPull({});
+    schedulePoll();
+  },delay);
+}
+
+/* ---------- 设置面板里的按键 ---------- */
+function bindSyncUI(){
+  var ti=document.getElementById('setToken');
+  var b1=document.getElementById('btnTokenSave');
+  var b2=document.getElementById('btnTokenClear');
+  var b3=document.getElementById('btnSyncPush');
+  var b4=document.getElementById('btnSyncPull');
+  if(b1) b1.onclick=function(){
+    var v=((ti&&ti.value)||'').trim();
+    if(v.length<20||/\s/.test(v)){ toast('这不像 GitHub 令牌（太短或含空格）'); return; }
+    syncSetToken(v);
+    if(ti) ti.value='';
+    toast('钥匙已保存到本机');
+    schedulePoll();
+    doPull({});
+  };
+  if(b2) b2.onclick=function(){ syncClearToken(); toast('已清除本机钥匙'); };
+  if(b3) b3.onclick=function(){ clearTimeout(SYNC.pushTimer); doUpload({manual:true}); };
+  if(b4) b4.onclick=function(){ clearTimeout(SYNC.pushTimer); doPull({manual:true}); };
+}
+
+/* ---------- 启动 ---------- */
+function syncInit(){
+  var ok=false;
+  try{ ok=!!(window.fetch&&window.Promise&&window.localStorage); }catch(e){ ok=false; }
+  if(!ok){ syncSet('err','此浏览器不支持云同步（用新版 Chrome/Edge/Safari 即可）'); return; }
+  syncLoadToken();
+  bindSyncUI();
+  if(!SYNC.token){
+    syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
+    syncRenderStatus();                        /* 不报错、不联网：其余功能照常离线用 */
+  }else{
+    syncSet('ok','已连接');
+    schedulePoll();
+    setTimeout(function(){ doPull({}); },600);
+  }
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'){
+      if(SYNC.token) doPull({});                /* 页面重新可见 → 立刻拉一次 */
+      schedulePoll();
+    }
+  });
+  window.addEventListener('online',function(){ if(SYNC.token){ SYNC.authFailed=false; doPull({}); } });
+}
+
+/* =========================================================
    13. 启动
    ========================================================= */
 function boot(){
   bind();
+  syncInit();                     /* ☁ 云同步：读本机钥匙、起轮询 */
   if(state.currentUser&&ROSTER[state.currentUser]){ showMain(); }
   else{ showLogin(); }
 }
@@ -1373,6 +1826,20 @@ window.APP={
     return {key:key,count:a.length,items:a};
   },
   _buildTribute:buildTribute,
+  /** ☁ 云同步自测接口 */
+  sync:{
+    info:function(){ return {token:!!SYNC.token,kind:SYNC.kind,msg:SYNC.msg,lastSync:SYNC.lastSync,authFailed:SYNC.authFailed,remoteSha:SYNC.remoteSha}; },
+    setToken:function(t){ var r=syncSetToken(t); if(r){ schedulePoll(); doPull({}); } return r; },
+    clearToken:function(){ syncClearToken(); },
+    push:function(o){ return doUpload(o||{manual:true}); },
+    pull:function(o){ return doPull(o||{manual:true}); },
+    cloudGet:cloudGet,
+    payload:function(){ return buildCloudPayload(); },
+    hasData:function(s){ return stateHasData(s===undefined?state:s); },
+    /** 自测用：手动改本机 updatedAt（0=本机从来没改过） */
+    setUpdatedAt:function(t){ state.updatedAt=Number(t)||0; lastSig=''; save({quiet:true}); return state.updatedAt; },
+    _status:function(){ return SYNC; }
+  },
   /** 自测辅助：直接以文本导入（走与文件导入相同的校验逻辑） */
   _importText:function(txt){
     var parsed;
