@@ -65,12 +65,6 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .topseason .s1{font-size:17px;font-weight:900;color:var(--gold);letter-spacing:.5px;text-shadow:0 1px 0 #4a3200;}
 .topseason .s2{font-size:12.5px;color:#d8ece1;margin-top:2px;letter-spacing:.3px;}
 .gearbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:19px;flex:0 0 auto;}
-.testwrap{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.14);border-radius:999px;padding:3px 7px 3px 9px;flex:0 0 auto;}
-.testwrap span{font-size:11.5px;color:#fff;font-weight:700;}
-.switch{position:relative;width:40px;height:22px;border-radius:999px;background:#93a3ad;transition:background .15s;flex:0 0 auto;}
-.switch.on{background:#27c07a;}
-.switch i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
-.switch.on i{left:20px;}
 
 .welrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 3px 7px;}
 .wel{color:#fff;font-size:17px;font-weight:900;letter-spacing:.5px;}
@@ -253,10 +247,6 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <div class="s1">【s1-黎明之始】健康饮食打卡</div>
         <div class="s2" id="segLine">第3赛段</div>
       </div>
-      <div class="testwrap" id="testSwitchWrap" title="测试模式">
-        <span>测试</span>
-        <div class="switch" id="testSwitch"><i></i></div>
-      </div>
       <button class="gearbtn" id="btnGear" title="设置">⚙</button>
     </header>
 
@@ -343,6 +333,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
     <div class="setrow">
       <label>赛段起始日期（赛段号写死为第 3 赛段，改代码里的 SEG_NO 即可）</label>
+      <div class="note" style="margin-top:0;">计分窗口 = 起始日起 <b>7 天</b>：起始日 00:00 — 第 7 日 24:00 全天可录分（无时段限制）；第 7 日 00:00 起开放结算；窗口结束后计分键锁死（不补录）。</div>
       <input type="date" id="setStart"/>
     </div>
 
@@ -360,11 +351,6 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <button class="btn-ghost" id="btnSyncPull">⬇ 拉取云端数据</button>
       </div>
       <div class="note" style="margin-top:8px;">自动同步：改分 / 点保存后 <b>2 秒</b>自动上传；页面开着时每 <b>8 秒</b>查一次云端（画面不可见就停）。冲突按 <b>updatedAt（最后改动时间）</b>取新的那份，不会无脑覆盖。</div>
-    </div>
-
-    <div class="setrow">
-      <label>测试模式</label>
-      <button class="btn-ghost" id="setToggleTest" style="width:100%;">切换</button>
     </div>
 
     <div class="setrow">
@@ -416,7 +402,14 @@ var KING_FEE=10, DUKE_FEE=5;   /* 赛季敬献：河贼王 10r/人，河贼公 5
 var STORE_KEY='jianfei_score_v2';
 /* ★ 本期刺客写死为芋头（hyt）：设置面板不再开放修改，下一期再补充刺客计算规则 */
 var ASSASSIN_ID='hyt';
-var SCORING_FROM=6, SCORING_TO=23;
+/* ★★ 开发模式开关（默认 false＝正式版）。
+   ① 开发者要长期解锁：把下面 false 改成 true；
+   ② 临时后门：用带参数的网址打开 → ?dev=1（不写进界面、页面上无任何提示）。
+   DEV_MODE=true 时：计分 / 结算 / 时间锁全部放开。 */
+var DEV_MODE=false;
+try{ if(/[?&]dev=1(?:&|$)/.test(String(location.search||''))) DEV_MODE=true; }catch(e){}
+/* ★ 赛段起始日：计分窗口 = 起始日 00:00 起，共 7 天（第 7 日 24:00 止） */
+var SEG_START_DEF='2026-10-12';
 var SEGMENT_DAYS=7;
 var CHAL_REVISION_LIMIT=1;     /* 挑战保存后允许再改的次数（1 次，改过就锁） */
 var CROWN_MAX=3;               /* 一赛季最多 3 冠 */
@@ -439,10 +432,9 @@ function freshState(){
     season:SEASON,
     segment:SEG_NO,
     updatedAt:0,                 /* ★ 本地最后变更时间（毫秒）；0 = 本机从来没改过（用于云端同步取新） */
-    segStart:'2026-10-12',
+    segStart:SEG_START_DEF,
     players:players,
     currentUser:null,
-    testMode:true,
     titleAuto:true,
     segTitle:{king:null,duke:null},
     assassin:ASSASSIN_ID,
@@ -458,9 +450,8 @@ function migrate(s){
   base.season=SEASON;                 /* ★ 赛季以代码常量为准（改了 SEASON 即切换，变更前的已自动备份） */
   base.segment=SEG_NO;
   base.updatedAt=Number(s.updatedAt)||0;      /* ★ 云端同步用：沿用原值，别在迁移时刷新 */
-  base.segStart=s.segStart||'2026-10-12';
+  base.segStart=s.segStart||SEG_START_DEF;
   base.currentUser=s.currentUser||null;
-  base.testMode=(s.testMode===undefined)?true:!!s.testMode;
   base.dayOverride=(s.dayOverride===undefined)?null:s.dayOverride;
   base.settled=!!s.settled;
   if(s.crownBase&&typeof s.crownBase==='object'){
@@ -588,26 +579,53 @@ var chalDraft={};      /* 未点保存的挑战草稿（只在内存，不进 st
 /* =========================================================
    3. 时间 / 赛段
    ========================================================= */
-function todayDate(){ var d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+/* ---------- 当前时间（唯一入口，测试接口可伪装）---------- */
+var nowOverride=null;      /* 毫秒；null = 用真实时间（仅 APP._now 调试用） */
+function nowMs(){ return (nowOverride===null)?Date.now():nowOverride; }
+function nowDate(){ var d=new Date(nowMs()); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function todayDate(){ return nowDate(); }
 function fmtMD(d){ return (d.getMonth()+1)+'月'+d.getDate()+'日'; }
 function segStartDate(){
-  var p=String(state.segStart||'2026-10-12').split('-');
+  var p=String(state.segStart||SEG_START_DEF).split('-');
   return new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
 }
-function naturalDay(){
-  var diff=Math.round((todayDate()-segStartDate())/86400000)+1;
-  return Math.min(SEGMENT_DAYS,Math.max(1,diff));
+/* ★ 赛段窗口 = [起始日 00:00, 起始日+7天 00:00)：第 1 天 00:00 → 第 7 天 24:00 */
+function segStartMs(){ return segStartDate().getTime(); }
+function segEndMs(){ return segStartMs()+SEGMENT_DAYS*86400000; }
+function segPhase(){
+  var t=nowMs();
+  if(t<segStartMs()) return 'before';      /* 赛段未开始 */
+  if(t<segEndMs())  return 'open';         /* 窗口内：全天 24 小时可录分 */
+  return 'ended';                         /* 窗口已过：录分截止，不补录 */
 }
+function rawDay(){ return Math.round((nowDate()-segStartDate())/86400000)+1; }
+function naturalDay(){ return Math.min(SEGMENT_DAYS,Math.max(1,rawDay())); }
 function currentDay(){
-  if(state.testMode&&state.dayOverride) return state.dayOverride;
+  if(DEV_MODE&&state.dayOverride) return Math.min(SEGMENT_DAYS,Math.max(1,state.dayOverride));
   return naturalDay();
 }
-function editId(){ return (state.testMode&&editTarget)?editTarget:state.currentUser; }
+function editId(){ return (DEV_MODE&&editTarget)?editTarget:state.currentUser; }
 function me(){ return state.currentUser; }
 
-function nowHour(){ return new Date().getHours(); }
-function scoringOpen(){ if(state.testMode) return true; var h=nowHour(); return h>=SCORING_FROM&&h<SCORING_TO; }
-function settleOpen(){ if(state.testMode) return true; return currentDay()>=SEGMENT_DAYS; }
+/* ---------- 时间锁 ---------- */
+/* 计分：从现在起（含 10/12 开赛前的热身期）一直到【第 7 天 24:00】全天 24 小时都能录；
+   10/19 00:00 起一律锁死（录分结束，不补录）。已无 06:00–23:00 时段限制。 */
+function scoringOpen(){ if(DEV_MODE) return true; return nowMs()<segEndMs(); }
+/* 结算：第 7 天（最后一天）0 点起开放，即 10/18 00:00 起；录分截止后依然可点 */
+function settleOpen(){
+  if(DEV_MODE) return true;
+  if(nowMs()>=segEndMs()) return true;                            /* 录分结束后：结算键一直能点 */
+  return nowMs()>=segStartMs()+(SEGMENT_DAYS-1)*86400000;         /* 第 7 天 0 点起 */
+}
+/* 给用户看的窗口提示：第 X/7 天 + 是否在可录分窗口。
+   （正式版和后门版显示同一句，页面看不出区别） */
+function windowHint(){
+  var start=segStartDate();
+  var lastEnd=new Date(segEndMs()-1);          /* 第 7 天 24:00 */
+  if(nowMs()>=segEndMs()) return '赛段已结束 · 本赛段录分已结束（'+fmtMD(lastEnd)+' 24:00 截止）';
+  if(nowMs()<segStartMs()) return '第 0/'+SEGMENT_DAYS+' 天 · 赛段 '+fmtMD(start)+' 开始（现在已可先录分）';
+  return '第 '+currentDay()+'/'+SEGMENT_DAYS+' 天 · 在可录分窗口内（'+fmtMD(start)+'—'+fmtMD(lastEnd)+'，全天可录）';
+}
 
 /* =========================================================
    4. 计分
@@ -888,8 +906,6 @@ function crownStageHTML(id,lv,knife){
 function renderHeader(){
   var d=todayDate();
   $('segLine').textContent='第'+state.segment+'赛段 · '+fmtMD(d)+' · 第 '+currentDay()+'/'+SEGMENT_DAYS+' 天';
-  var sw=$('testSwitch');
-  if(state.testMode) sw.classList.add('on'); else sw.classList.remove('on');
   var id=me();
   $('welLine').textContent=(id?'欢迎 '+ROSTER[id].name+' 👋':'欢迎');
 }
@@ -996,7 +1012,7 @@ function renderCounter(){
 
   var who='<div class="av">'+avatarInner(id)+'</div><b>'+ROSTER[id].name+'</b>';
   who+=myBadgeHTML(id);
-  if(state.testMode&&editTarget&&editTarget!==me()) who+='<span style="font-size:11px;color:#b07a00;font-weight:800;">（测试代填）</span>';
+  if(DEV_MODE&&editTarget&&editTarget!==me()) who+='<span style="font-size:11px;color:#b07a00;font-weight:800;">（测试代填）</span>';
   if(me()===id&&!editTarget) who+='<button class="btn-ghost" id="btnAvatar" style="padding:4px 9px;font-size:12px;border-radius:9px;margin-left:2px;">换头像</button>';
   $('counterWho').innerHTML=who;
 
@@ -1014,7 +1030,7 @@ function renderCounter(){
     for(var k=1;k<=SEGMENT_DAYS;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
   }
   sel.value=String(d);
-  sel.disabled=!state.testMode;
+  sel.disabled=!DEV_MODE;      /* 正式模式：只用当天，天数选择器不可用 */
 
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
@@ -1024,15 +1040,8 @@ function renderCounter(){
   $('btnSettle').disabled=!settleOpen();
 
   var hint=$('lockHint');
-  if(!state.testMode&&(!open||!settleOpen())){
-    var msgs=[];
-    if(!open) msgs.push('计分时间 06:00–23:00 之外已锁住（防误触）');
-    if(!settleOpen()) msgs.push('第 '+SEGMENT_DAYS+' 天开放结算');
-    hint.textContent=msgs.join('；');
-    hint.classList.remove('hidden');
-  }else{
-    hint.classList.add('hidden');
-  }
+  hint.textContent=windowHint();     /* 模式无关：页面永远显示同一句，后门版看不出区别 */
+  hint.classList.remove('hidden');
 }
 function renderAll(){
   LAST_S=computeSettlement();
@@ -1092,7 +1101,7 @@ function crownBaseSnapshot(){
    ① 从基准恢复皇冠（撑销上一次加给前二名的 +1）→ ② 当前前二名各 +1（上限 3）→ ③ 再弹卡片。
    总分/排名没变时重复点，结果完全一样（幂等），跨多次结算不会无限叠加。 */
 function openSettle(){
-  if(!settleOpen()){ toast('第 '+SEGMENT_DAYS+' 天开放结算'); return; }
+  if(!settleOpen()){ toast('第 '+SEGMENT_DAYS+' 天（'+fmtMD(new Date(segEndMs()-86400000))+'）起可结算'); return; }
   if(!state.crownBase) state.crownBase=crownBaseSnapshot();
   var before={};
   ORDER.forEach(function(id){ before[id]=state.players[id].crowns; });
@@ -1325,15 +1334,9 @@ function bind(){
   $('btnSettle').onclick=openSettle;
 
   $('daySelect').onchange=function(){
-    if(!state.testMode){ renderCounter(); return; }
+    if(!DEV_MODE){ renderCounter(); return; }   /* 正式模式：天数选择器不可用（只录当天） */
     state.dayOverride=parseInt(this.value,10); undoStack=[];
     save(); renderAll();
-  };
-  $('testSwitch').onclick=function(){
-    state.testMode=!state.testMode;
-    if(!state.testMode) editTarget=null;
-    save(); renderAll();
-    toast(state.testMode?'测试模式：计分键 + 结算键均可点':'正式模式：按时间锁住');
   };
 
   function pickAvatar(){
@@ -1362,7 +1365,6 @@ function bind(){
   $('setDuke').onchange=applySettings;
   $('setStart').onchange=applySettings;
   $('setAutoTitle').onclick=function(){ state.titleAuto=true; state.segTitle={king:null,duke:null}; save(); renderAll(); openSettings(); toast('已切回自动称号'); };
-  $('setToggleTest').onclick=function(){ state.testMode=!state.testMode; save(); renderAll(); openSettings(); };
   $('btnReset').onclick=openConfirm;
   $('confirmCancel').onclick=closeConfirm;
   $('confirmOk').onclick=doReset;
@@ -1579,15 +1581,14 @@ function stateHasData(s){
 /* ---------- 应用云端数据（按 updatedAt 取新后用）---------- */
 function applyRemote(remote){
   if(!remote||!isOurState(remote)) return false;
-  var keepUser=state.currentUser, keepTest=state.testMode, keepDay=state.dayOverride;
+  var keepUser=state.currentUser, keepDay=state.dayOverride;
   SYNC.applying=true;
   try{
     state=migrate(remote);
     state.updatedAt=Number(remote.updatedAt)||0;
-    /* ★ 这几项是「本机自己的」：登录身份 / 测试模式 / 正在填第几天，不跟着云端串。
+    /* ★ 这几项是「本机自己的」：登录身份 / 正在填第几天，不跟着云端串。
        本机没登录过就老老实实回登录页，别把人塞进别人的身份里。 */
     state.currentUser=ROSTER[keepUser]?keepUser:null;
-    state.testMode=keepTest;
     state.dayOverride=keepDay;
     chalDraft={}; editTarget=null; undoStack=[];
     save({quiet:true});
@@ -1792,6 +1793,16 @@ window.APP={
   logout:logout,
   _day:function(){ return currentDay(); },
   _setDay:function(n){ state.dayOverride=n; save(); renderAll(); },
+  /* ★ 时间锁自测接口（仅控制台可用，不写进界面） */
+  dev:function(){ return DEV_MODE; },
+  _now:function(iso){ nowOverride=(iso===null||iso===undefined)?null:new Date(String(iso)).getTime(); renderAll(); return nowOverride; },
+  _clearNow:function(){ nowOverride=null; renderAll(); return null; },
+  _phase:function(){ return segPhase(); },
+  _window:function(){
+    return {phase:segPhase(),rawDay:rawDay(),dev:DEV_MODE,scoringOpen:scoringOpen(),settleOpen:settleOpen(),
+            segStart:state.segStart,segStartMs:segStartMs(),segEndMs:segEndMs(),
+            hint:(function(){ try{ return windowHint(); }catch(e){ return ''; } })()};
+  },
   _crowns:function(map){
     if(!state.crownBase){ state.crownBase={}; ORDER.forEach(function(id){ state.crownBase[id]=state.players[id].crowns; }); }
     ORDER.forEach(function(id){ if(map[id]!==undefined){ var v=Math.max(0,Math.min(CROWN_MAX,map[id])); state.players[id].crowns=v; state.crownBase[id]=v; } });
