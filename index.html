@@ -350,7 +350,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <button class="btn-ghost" id="btnSyncPush">↻ 立即同步（上传）</button>
         <button class="btn-ghost" id="btnSyncPull">⬇ 拉取云端数据</button>
       </div>
-      <div class="note" style="margin-top:8px;">自动同步：改分 / 点保存后 <b>2 秒</b>自动上传；页面开着时每 <b>8 秒</b>查一次云端（画面不可见就停）。冲突按 <b>updatedAt（最后改动时间）</b>取新的那份，不会无脑覆盖。</div>
+      <div class="note" style="margin-top:8px;">自动同步：改分 / 点保存后 <b>5 秒</b>自动上传；页面开着时每 <b>45 秒</b>探测一次云端（<b>ETag 条件请求</b>：云端没变只回一个 0 字节的 304，不下载正文、不重画；画面不可见就停）。冲突按 <b>updatedAt（最后改动时间）</b>取新的那份，不会无脑覆盖。</div>
     </div>
 
     <div class="setrow">
@@ -1385,14 +1385,18 @@ function bind(){
 var SYNC={
   TOKEN_KEY:'jianfei_gh_token',                       /* ★ 令牌只存在这里（浏览器本机） */
   API:'https://api.github.com/repos/stmelthn/jianfei-daka/contents/cloud.json',
-  POLL_MS:8000,          /* 页面可见时每 8 秒查一次云端 */
+  POLL_MS:45000,         /* ★ 页面可见时每 45 秒「探测」一次云端（ETag 条件请求） */
   BACKOFF_MS:60000,      /* 钥匙无效/无权限时退避到 60 秒一次 */
-  DEBOUNCE_MS:2000,      /* 本地改分后防抖 2 秒自动上传 */
+  DEBOUNCE_MS:5000,      /* ★ 本地改分后防抖 5 秒自动上传 */
   AVATAR_LIMIT:200*1024, /* 单个头像超过 200KB → 上传前压缩 */
   CLOUD_LIMIT:900*1024,  /* 整个 cloud.json 超过 900KB → 提示清头像 */
   token:'', kind:'none', msg:'', lastSync:0,
   authFailed:false, pollTimer:null, pushTimer:null,
-  pushing:false, pulling:false, queued:false, remoteSha:null
+  pushing:false, pulling:false, queued:false, remoteSha:null,
+  /* ★ ETag 条件请求：云端内容没变时服务端回 304（0 字节）→ 不下载正文、不解析、不渲染。
+     etag 只存在内存里（刷新页面重新拿一次即可，不必进 localStorage）。 */
+  etag:null,          /* 上次看到的内容 ETag（= 云端文件的 blob sha） */
+  probing:false       /* 正在探测（防重入） */
 };
 
 /* ---------- base64（UTF-8 安全）---------- */
@@ -1459,7 +1463,7 @@ function syncSetToken(t){
   return true;
 }
 function syncClearToken(){
-  SYNC.token=''; SYNC.authFailed=false; SYNC.remoteSha=null;
+  SYNC.token=''; SYNC.authFailed=false; SYNC.remoteSha=null; SYNC.etag=null;
   try{ localStorage.removeItem(SYNC.TOKEN_KEY); }catch(e){}
   clearTimeout(SYNC.pushTimer); clearTimeout(SYNC.pollTimer); SYNC.pollTimer=null;
   syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
@@ -1478,6 +1482,7 @@ function httpErr(r){
 /* 读云端：404 = 文件还不存在（sha 为 null，直接新建） */
 function cloudGet(){
   return fetch(SYNC.API+'?ts='+Date.now(),{method:'GET',headers:ghHeaders(true),cache:'no-store'}).then(function(r){
+    try{ var _et=r.headers.get('ETag'); if(_et) SYNC.etag=_et; }catch(e){}
     if(r.status===404) return {exists:false,sha:null,json:null};
     if(!r.ok) return httpErr(r);
     return r.json().then(function(j){
@@ -1496,7 +1501,14 @@ function cloudPut(text,sha,msg){
   var h=ghHeaders(true); h['Content-Type']='application/json';
   return fetch(SYNC.API,{method:'PUT',headers:h,body:JSON.stringify(body)}).then(function(r){
     if(!r.ok) return httpErr(r);
-    return r.json();
+    /* ★ 上传后立刻把本机 etag 换成「刚写进去的这一版」：
+       contents 接口 GET 的 ETag 恰好 ＝ 该文件的 blob sha ＝ 本次 PUT 返回的 content.sha，
+       所以下次轮询直接命中 304，不会因为刚上传完又整文拉一遍。拿不到 sha → 置空，下次整文 GET 再校准。 */
+    return r.json().then(function(j){
+      var blob=(j&&j.content&&j.content.sha)||null;
+      SYNC.etag=blob?('"'+blob+'"'):null;
+      return j;
+    });
   });
 }
 
@@ -1710,6 +1722,79 @@ function doPull(opt){
   });
 }
 
+/* ---------- 轻量探测：ETag 条件请求（304 = 0 字节）----------
+   第一次 GET 记下响应头 ETag；以后每次带 If-None-Match: <ETag>。
+     · 304 → changed:false        （云端没变：不下载、不解析、不渲染、不动状态行）
+     · 200 → changed:true + 正文  （云端真的变了，交给 probePull 走「取新」逻辑）
+     · 浏览器读不到 ETag 头（老浏览器 / 跨域未暴露）→ etag 兜底用响应体里的 blob sha；
+       连 sha 也拿不到 → etag 一直为空、不带条件头 → 自动退化成「直接 GET 全文」，不报错。 */
+function probeRemote(){
+  if(SYNC.probing) return Promise.resolve({changed:false,skipped:true});
+  SYNC.probing=true;
+  var h=ghHeaders(true);
+  if(SYNC.etag) h['If-None-Match']=SYNC.etag;      /* 有 ETag 才带条件头 */
+  return fetch(SYNC.API,{method:'GET',headers:h,cache:'no-store'}).then(function(r){
+    /* 200 / 304 两种响应 GitHub 都会回 ETag 头，都刷新本机 etag */
+    var et=null; try{ et=r.headers.get('ETag'); }catch(e){ et=null; }
+    if(et) SYNC.etag=et;
+    if(r.status===304) return {changed:false,notModified:true};
+    if(r.status===404) return {changed:true,exists:false,sha:null,json:null};
+    if(!r.ok) return httpErr(r);
+    return r.json().then(function(j){
+      if(!et){                                     /* 头读不到 → 用 blob sha 兜底（与 ETag 等价） */
+        var _blob=(j&&j.sha)||null;
+        if(_blob) SYNC.etag='"'+_blob+'"';
+      }
+      var txt='';
+      try{ txt=b64Decode(j&&j.content); }catch(e){ txt=''; }
+      var parsed=null;
+      try{ parsed=JSON.parse(txt); }catch(e){ parsed=null; }
+      return {changed:true,exists:true,sha:(j&&j.sha)||null,json:parsed};
+    });
+  }).then(function(res){ SYNC.probing=false; return res; },
+          function(e){ SYNC.probing=false; throw e; });
+}
+
+/* ---------- 轮询专用拉取：先探测，未变化就静默跳过 ---------- */
+function probePull(opt){
+  opt=opt||{};
+  if(!SYNC.token){ return Promise.resolve(false); }
+  if(SYNC.pulling||SYNC.pushing||SYNC.probing) return Promise.resolve(false);
+  return probeRemote().then(function(res){
+    if(!res||res.notModified||!res.changed) return false;   /* ★ 304：静默跳过（不渲染/不改状态行） */
+    if(!res.exists){                                        /* 云端为空 → 本地有数据就传上去 */
+      if(stateHasData(state)) return doUpload({force:true});
+      SYNC.lastSync=Date.now(); syncSet('ok','已连接 · 云端暂无数据');
+      return false;
+    }
+    var remote=res.json;
+    if(!isOurState(remote)){ syncSet('err','云端数据格式异常（已忽略）'); return false; }
+    SYNC.remoteSha=res.sha;
+    var rU=Number(remote.updatedAt)||0, lU=Number(state.updatedAt)||0;
+    var ld=stateHasData(state), rd=stateHasData(remote);
+    SYNC.authFailed=false;
+    if(ld&&lU>rU){                                          /* 本机较新 → 不覆盖，安排上传 */
+      SYNC.lastSync=Date.now();
+      syncSet('ok','已连接 · 本机较新，稍后自动上传'); schedulePush();
+      return false;
+    }
+    if(rd&&(!ld||rU>lU)){                                   /* 云端较新（或本地还空）→ 覆盖本地 */
+      applyRemote(remote);
+      SYNC.lastSync=Date.now();
+      syncSet('ok','已连接 · 已同步云端数据');
+      return true;
+    }
+    SYNC.lastSync=Date.now();
+    syncSet('ok','已连接 · 已是最新');
+    return false;
+  },function(e){
+    var st=e&&e.status;
+    if(st===401||st===403){ SYNC.authFailed=true; syncSet('err','钥匙无效或无权限'); }
+    else syncSet('err','同步失败：'+((e&&e.message)||'网络异常'));
+    return false;
+  });
+}
+
 /* ---------- 定时器 ---------- */
 function schedulePush(){
   if(SYNC.applying) return;
@@ -1721,7 +1806,7 @@ function schedulePoll(){
   clearTimeout(SYNC.pollTimer);
   var delay=SYNC.authFailed?SYNC.BACKOFF_MS:SYNC.POLL_MS;
   SYNC.pollTimer=setTimeout(function(){
-    if(SYNC.token&&document.visibilityState==='visible') doPull({});
+    if(SYNC.token&&document.visibilityState==='visible') probePull({});   /* ★ 条件探测 */
     schedulePoll();
   },delay);
 }
@@ -1760,15 +1845,15 @@ function syncInit(){
   }else{
     syncSet('ok','已连接');
     schedulePoll();
-    setTimeout(function(){ doPull({}); },600);
+    setTimeout(function(){ probePull({}); },600);
   }
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'){
-      if(SYNC.token) doPull({});                /* 页面重新可见 → 立刻拉一次 */
+      if(SYNC.token) probePull({});             /* 页面重新可见 → 立刻探测一次 */
       schedulePoll();
     }
   });
-  window.addEventListener('online',function(){ if(SYNC.token){ SYNC.authFailed=false; doPull({}); } });
+  window.addEventListener('online',function(){ if(SYNC.token){ SYNC.authFailed=false; probePull({}); } });
 }
 
 /* =========================================================
@@ -1845,6 +1930,13 @@ window.APP={
     push:function(o){ return doUpload(o||{manual:true}); },
     pull:function(o){ return doPull(o||{manual:true}); },
     cloudGet:cloudGet,
+    /** ★ 自测用：手动跑一次条件探测（返回 {changed,notModified,exists,sha}） */
+    probe:function(){ return probeRemote(); },
+    /** ★ 自测用：跑一次轮询版拉取 */
+    probePull:function(o){ return probePull(o||{}); },
+    etag:function(){ return SYNC.etag; },
+    _setEtag:function(v){ SYNC.etag=(v===undefined||v===null)?null:String(v); return SYNC.etag; },
+    _setApi:function(u){ SYNC.API=String(u); return SYNC.API; },
     payload:function(){ return buildCloudPayload(); },
     hasData:function(s){ return stateHasData(s===undefined?state:s); },
     /** 自测用：手动改本机 updatedAt（0=本机从来没改过） */
