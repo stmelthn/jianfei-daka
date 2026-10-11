@@ -265,7 +265,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     <div class="chalpanel">
       <h3>本期挑战 <span class="admin">（每人 1 条 · 这里只显示自己的）</span></h3>
       <div id="chalList"></div>
-      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+20</b> 挑战分（不受每日 4 分上限限制）。</div>
+      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+20</b> 挑战分（不受每日 5 分上限限制）。</div>
     </div>
 
     <div class="counter">
@@ -282,11 +282,12 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
       <div class="grid2">
         <button class="btn-ghost btn-plus" id="btnMeal">＋ 健康餐</button>
         <button class="btn-ghost btn-plus" id="btnWeigh">＋ 上称</button>
+        <button class="btn-ghost btn-plus" id="btnExercise">＋ 运动</button>
         <button class="btn-ghost btn-minus" id="btnUndo">－ 撤销</button>
-        <button class="btn-ghost" id="btnClear">清空本日</button>
+        <button class="btn-ghost" id="btnClear" style="grid-column:1/-1;">清空本日</button>
       </div>
 
-      <div class="note">计分说明：日常分（每天上限 <b>4</b> 分＝健康餐 <b>3</b> 顿封顶 ＋ 上称 1 次，健康餐满 3 顿后按钮锁住，上称可多记但只计 1 分）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分</div>
+      <div class="note">计分说明：日常分（每天上限 <b>5</b> 分＝健康餐 <b>3</b> 顿封顶 ＋ 上称 1 次 ＋ 运动 1 次，健康餐满 3 顿、运动满 1 次后按钮锁住，上称可多记但只计 1 分）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分</div>
 
       <button class="btn-primary save" id="btnSave">保 存</button>
       <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
@@ -396,7 +397,7 @@ var SEASON='s1-黎明之始';
 var SEG_NO=3;                                  /* ←★ 赛段号写死在这里 */
 var INIT_CROWNS={hyt:0, gd:1, clm:2, lmh:1};   /* 蛋蛋2👑 栋栋1👑 西瓜1👑 芋头0👑 */
 var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
-var MAX_MEALS=3, MAX_WEIGH=1, DAY_CAP=4, CHALLENGE_PTS=20;
+var MAX_MEALS=3, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=5, CHALLENGE_PTS=20;
 var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 前二名各得 6r */
 var KING_FEE=10, DUKE_FEE=5;   /* 赛季敬献：河贼王 10r/人，河贼公 5r/人 */
 var STORE_KEY='jianfei_score_v2';
@@ -475,7 +476,14 @@ function migrate(s){
   ORDER.forEach(function(id){
     var p=(s.players&&s.players[id])||{};
     var d=base.players[id];
-    if(p.days&&typeof p.days==='object') d.days=p.days;
+    if(p.days&&typeof p.days==='object'){   /* ★ 兼容旧数据：缺 exercise 一律补 0，不报错、不丢旧数据 */
+      var dd={};
+      for(var dk in p.days){ if(!Object.prototype.hasOwnProperty.call(p.days,dk)) continue;
+        var dv=p.days[dk]||{};
+        dd[dk]={meals:Number(dv.meals)||0, weigh:Number(dv.weigh)||0, exercise:Number(dv.exercise)||0};
+      }
+      d.days=dd;
+    }
     if(typeof p.crowns==='number') d.crowns=Math.max(0,Math.min(CROWN_MAX,p.crowns));
     if(typeof p.knives==='number') d.knives=p.knives;
     if(p.challenge){
@@ -631,7 +639,7 @@ function windowHint(){
    4. 计分
    ========================================================= */
 function getDay(id,d){
-  if(!state.players[id].days[d]) state.players[id].days[d]={meals:0,weigh:0};
+  if(!state.players[id].days[d]) state.players[id].days[d]={meals:0,weigh:0,exercise:0};
   return state.players[id].days[d];
 }
 function dayScore(id,d){
@@ -639,7 +647,8 @@ function dayScore(id,d){
   if(!dt) return 0;
   var m=Math.min(dt.meals||0,MAX_MEALS);
   var w=Math.min(dt.weigh||0,MAX_WEIGH);
-  return m+w;
+  var e=Math.min(dt.exercise||0,MAX_EXERCISE);   /* ★ 运动每天只计 1 分 */
+  return m+w+e;
 }
 function challengePts(id){
   var c=state.players[id].challenge;
@@ -663,7 +672,7 @@ function rankOf(id){
 }
 function daysChecked(id){
   var n=0;
-  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0)) n++; }
+  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0||(dt.exercise||0)>0)) n++; }
   return n;
 }
 function fullMealDays(id){
@@ -921,7 +930,7 @@ function renderBoard(){
     li.innerHTML='<span class="rk">'+rank+'</span><span class="av">'+avatarInner(r.id)+'</span>'+
       '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
       '<span class="pt">'+r.score+'</span>';
-    li.title=ROSTER[r.id].name+'：日常分 '+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score;
+    li.title=ROSTER[r.id].name+'：日常分（三餐＋上称＋运动）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score;
     ul.appendChild(li); rank++;
   });
   renderBoardChal();
@@ -1004,10 +1013,11 @@ function renderCounter(){
   var id=editId();
   if(!id){ return; }
   var d=currentDay();
-  var dt=state.players[id].days[d]||{meals:0,weigh:0};
-  var m=dt.meals||0, w=dt.weigh||0;
-  var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH);
+  var dt=state.players[id].days[d]||{meals:0,weigh:0,exercise:0};
+  var m=dt.meals||0, w=dt.weigh||0, e=dt.exercise||0;
+  var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH), ec=Math.min(e,MAX_EXERCISE);
   var mealFull=(m>=MAX_MEALS);          /* ★ 健康餐满 3 顿 → 锁住 */
+  var exFull=(e>=MAX_EXERCISE);         /* ★ 运动满 1 次 → 锁住（每天最多 1 次） */
   var overWeigh=(w>MAX_WEIGH);
 
   var who='<div class="av">'+avatarInner(id)+'</div><b>'+ROSTER[id].name+'</b>';
@@ -1018,10 +1028,12 @@ function renderCounter(){
 
   var dscore=dailyScore(id), cpts=challengePts(id);
   $('counterStat').innerHTML=
-    '第 '+d+' 天：健康餐 '+m+'/'+MAX_MEALS+' 餐 <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 上称 '+w+' 次 <span class="cap">（计 '+wc+' 分）</span><br/>'+
-    '本日得分 <b>'+(mc+wc)+'</b> / '+DAY_CAP+' 分 &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
+    '第 '+d+' 天：健康餐 '+m+'/'+MAX_MEALS+' 餐 <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 上称 '+w+' 次 <span class="cap">（计 '+wc+' 分）</span> · 运动 '+e+'/'+MAX_EXERCISE+' 次 <span class="cap">（计 '+ec+' 分'+(exFull?' · 已满':'')+'）</span><br/>'+
+    '本日得分 <b>'+(mc+wc+ec)+'</b> / '+DAY_CAP+' 分（健康餐 '+mc+' 餐 + 上称 '+wc+' + 运动 '+ec+'） &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
     '<span class="cap">（日常 '+dscore+' ＋ 挑战 '+cpts+'）</span>'+
+    '<br/><span class="cap">超出部分不计分（每日上限 '+DAY_CAP+' 分：'+MAX_MEALS+'餐 + '+MAX_WEIGH+'上称 + '+MAX_EXERCISE+'运动）</span>'+
     (mealFull?'<br/><span class="cap">健康餐 '+MAX_MEALS+'/'+MAX_MEALS+' 已满 · 上称可多记但只计 1 分</span>':'')+
+    (exFull?'<br/><span class="cap">运动 '+MAX_EXERCISE+'/'+MAX_EXERCISE+' 已满（每天只计 1 分）</span>':'')+
     (overWeigh?'<br/><span class="cap">上称超出部分不计分（每天只计 1 分）</span>':'');
 
   var sel=$('daySelect');
@@ -1035,6 +1047,7 @@ function renderCounter(){
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
   $('btnWeigh').disabled=!open;             /* 上称可一直点（只计 1 分） */
+  $('btnExercise').disabled=!open||exFull;  /* ★ 运动满 1 次锁住（每天最多 1 次） */
   $('btnUndo').disabled=!open;
   $('btnClear').disabled=!open;
   $('btnSettle').disabled=!settleOpen();
@@ -1072,6 +1085,15 @@ function addWeigh(){
   undoStack.push({id:id,day:d,field:'weigh',delta:dt.weigh-before});
   save(); renderAll();
 }
+function addExercise(){                   /* ★ 运动：每天最多 1 次，1 次 = 1 分 */
+  if(!scoringOpen()) return;
+  var id=editId(), d=currentDay(), dt=getDay(id,d);
+  var before=(dt.exercise||0);
+  if(before>=MAX_EXERCISE){ toast("运动今天已打卡（每天最多 "+MAX_EXERCISE+" 次）"); return; }   /* ★ 锁 1 次 */
+  dt.exercise=Math.min(before+1,MAX_EXERCISE);
+  undoStack.push({id:id,day:d,field:'exercise',delta:dt.exercise-before});
+  save(); renderAll();
+}
 function undo(){
   if(!scoringOpen()) return;
   var a=undoStack.pop();
@@ -1083,7 +1105,7 @@ function undo(){
 function clearDay(){
   if(!scoringOpen()) return;
   var id=editId(), d=currentDay();
-  state.players[id].days[d]={meals:0,weigh:0};
+  state.players[id].days[d]={meals:0,weigh:0,exercise:0};
   undoStack=[];
   save(); renderAll(); toast('已清空第'+d+'天');
 }
@@ -1328,6 +1350,7 @@ function bind(){
   $('btnLogout').onclick=logout;
   $('btnMeal').onclick=addMeal;
   $('btnWeigh').onclick=addWeigh;
+  $('btnExercise').onclick=addExercise;
   $('btnUndo').onclick=undo;
   $('btnClear').onclick=clearDay;
   $('btnSave').onclick=function(){ save(); toast('已保存到本机'); };
@@ -1584,7 +1607,7 @@ function stateHasData(s){
     if(c&&(c.text||c.done||c.saved)) return true;
     for(var d=1;d<=SEGMENT_DAYS;d++){
       var dt=p.days&&p.days[d];
-      if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0)) return true;
+      if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0||(dt.exercise||0)>0)) return true;
     }
   }
   return false;
@@ -1909,7 +1932,7 @@ window.APP={
     state.players[id].challenge={text:text||'',done:!!done,saved:!!text,revisions:0};
     save(); renderAll();
   },
-  _add:function(kind){ if(kind==='weigh') addWeigh(); else addMeal(); },
+  _add:function(kind){ if(kind==='weigh') addWeigh(); else if(kind==='exercise') addExercise(); else addMeal(); },
   _clear:function(){ clearDay(); },
   _openSettle:function(){ openSettle(); },
   _page:function(n){ cardPage=n; renderCard(); },
@@ -1965,8 +1988,10 @@ window.APP={
       for(var d=1;d<=SEGMENT_DAYS&&t>0;d++){
         var take=Math.min(DAY_CAP,t);
         var meals=Math.min(MAX_MEALS,take);
-        var weigh=take-meals;
-        state.players[id].days[d]={meals:meals,weigh:weigh};
+        var rest=take-meals;
+        var weigh=Math.min(MAX_WEIGH,rest);
+        var exercise=Math.min(MAX_EXERCISE,rest-weigh);
+        state.players[id].days[d]={meals:meals,weigh:weigh,exercise:exercise};
         t-=take;
       }
       if(t>0){ state.players[id].challenge={text:'测试',done:true,saved:true,revisions:0}; }
