@@ -578,6 +578,9 @@ function save(opt){
 }
 checkRollover();   /* ★ 先做变更检测，再读状态 */
 var state=load();
+/* ★ v4（3.3）：dayOverride 不跨会话持久化 —— 每次打开页面一律回到「今天」。
+   只在本次会话内存里有效；要补录就往下拉框主动选一天。防"选过第3天之后每次打开都误录"。 */
+state.dayOverride=null;
 var cardPage=1;
 var LAST_S=null;
 var editTarget=null;
@@ -609,7 +612,11 @@ function segPhase(){
 function rawDay(){ return Math.round((nowDate()-segStartDate())/86400000)+1; }
 function naturalDay(){ return Math.min(SEGMENT_DAYS,Math.max(1,rawDay())); }
 function currentDay(){
-  if(DEV_MODE&&state.dayOverride) return Math.min(SEGMENT_DAYS,Math.max(1,state.dayOverride));
+  /* ★ v4：正式模式也认 dayOverride（补录往期）；上限 = 今天（DEV 为 1..7），下限 1 */
+  if(state.dayOverride){
+    var hi=(DEV_MODE?SEGMENT_DAYS:naturalDay());
+    return Math.min(hi,Math.max(1,state.dayOverride|0));
+  }
   return naturalDay();
 }
 function editId(){ return (DEV_MODE&&editTarget)?editTarget:state.currentUser; }
@@ -1037,12 +1044,15 @@ function renderCounter(){
     (overWeigh?'<br/><span class="cap">上称超出部分不计分（每天只计 1 分）</span>':'');
 
   var sel=$('daySelect');
-  if(sel.options.length!==SEGMENT_DAYS){
+  /* ★ v4（3.1）：选项 1..maxDay。正式模式 maxDay=今天（未来天不进选项，防提前录分）；DEV 模式仍是 1..7。
+     选择器正式模式也放开，用于补录往期天数。 */
+  var maxDay=(DEV_MODE?SEGMENT_DAYS:naturalDay());
+  if(sel.options.length!==maxDay){
     sel.innerHTML='';
-    for(var k=1;k<=SEGMENT_DAYS;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
+    for(var k=1;k<=maxDay;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
   }
-  sel.value=String(d);
-  sel.disabled=!DEV_MODE;      /* 正式模式：只用当天，天数选择器不可用 */
+  sel.value=String(Math.min(d,maxDay));
+  sel.disabled=false;
 
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
@@ -1053,7 +1063,10 @@ function renderCounter(){
   $('btnSettle').disabled=!settleOpen();
 
   var hint=$('lockHint');
-  hint.textContent=windowHint();     /* 模式无关：页面永远显示同一句，后门版看不出区别 */
+  /* ★ v4（3.4）：选中「今天」→ 文案与改动前逐字相同；选中过去某天 → 一句补录提醒（不新增元素）。
+     ⚠️ 赛段结束后（录分已锁死）不显示"正在补录"，仍按原样提示"赛段已结束"，免得误导。 */
+  if(d!==naturalDay()&&segPhase()==='open') hint.textContent='正在补录 第'+d+'/'+SEGMENT_DAYS+' 天 · 补完记得切回今天';
+  else hint.textContent=windowHint();     /* 模式无关：页面永远显示同一句，后门版看不出区别 */
   hint.classList.remove('hidden');
 }
 function renderAll(){
@@ -1357,8 +1370,11 @@ function bind(){
   $('btnSettle').onclick=openSettle;
 
   $('daySelect').onchange=function(){
-    if(!DEV_MODE){ renderCounter(); return; }   /* 正式模式：天数选择器不可用（只录当天） */
-    state.dayOverride=parseInt(this.value,10); undoStack=[];
+    /* ★ v4：正式模式同样生效（补录往期），值夹到 [1, 今天]；DEV 模式仍可选 1..7 */
+    var n=parseInt(this.value,10);
+    if(!(n>=1)) n=naturalDay();
+    var hi=(DEV_MODE?SEGMENT_DAYS:naturalDay());
+    state.dayOverride=Math.min(hi,Math.max(1,n)); undoStack=[];
     save(); renderAll();
   };
 
