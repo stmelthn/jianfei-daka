@@ -412,6 +412,11 @@ try{ if(/[?&]dev=1(?:&|$)/.test(String(location.search||''))) DEV_MODE=true; }ca
 /* ★ 赛段起始日：计分窗口 = 起始日 00:00 起，共 7 天（第 7 日 24:00 止） */
 var SEG_START_DEF='2026-10-12';
 var SEGMENT_DAYS=7;
+/* ★ 2026-10-19 新增：赛后补录期。
+   赛段正常结束后，再宽限 BACKFILL_GRACE_DAYS 天，此期间仍可补录第 1..7 天的分（不得录未来）。
+   作用：大家中间漏记了分，赛段一结束就锁死补不了 → 给一个补录窗口。
+   改这里就能调长短（0 = 关闭赛后补录，和以前一样一到点就锁）。 */
+var BACKFILL_GRACE_DAYS=3;
 var CHAL_REVISION_LIMIT=1;     /* 挑战保存后允许再改的次数（1 次，改过就锁） */
 var CROWN_MAX=3;               /* 一赛季最多 3 冠 */
 
@@ -607,7 +612,8 @@ function segPhase(){
   var t=nowMs();
   if(t<segStartMs()) return 'before';      /* 赛段未开始 */
   if(t<segEndMs())  return 'open';         /* 窗口内：全天 24 小时可录分 */
-  return 'ended';                         /* 窗口已过：录分截止，不补录 */
+  if(t<segEndMs()+BACKFILL_GRACE_DAYS*86400000) return 'grace';  /* ★ 赛后补录期 */
+  return 'ended';                         /* 完全结束：录分锁死 */
 }
 function rawDay(){ return Math.round((nowDate()-segStartDate())/86400000)+1; }
 function naturalDay(){ return Math.min(SEGMENT_DAYS,Math.max(1,rawDay())); }
@@ -625,7 +631,11 @@ function me(){ return state.currentUser; }
 /* ---------- 时间锁 ---------- */
 /* 计分：从现在起（含 10/12 开赛前的热身期）一直到【第 7 天 24:00】全天 24 小时都能录；
    10/19 00:00 起一律锁死（录分结束，不补录）。已无 06:00–23:00 时段限制。 */
-function scoringOpen(){ if(DEV_MODE) return true; return nowMs()<segEndMs(); }
+function scoringOpen(){
+  if(DEV_MODE) return true;
+  /* ★ 2026-10-19：赛段结束后还有 BACKFILL_GRACE_DAYS 天的补录期，此期间仍可录分（补录往期） */
+  return nowMs()<segEndMs()+BACKFILL_GRACE_DAYS*86400000;
+}
 /* 结算：第 7 天（最后一天）0 点起开放，即 10/18 00:00 起；录分截止后依然可点 */
 function settleOpen(){
   if(DEV_MODE) return true;
@@ -637,7 +647,11 @@ function settleOpen(){
 function windowHint(){
   var start=segStartDate();
   var lastEnd=new Date(segEndMs()-1);          /* 第 7 天 24:00 */
-  if(nowMs()>=segEndMs()) return '赛段已结束 · 本赛段录分已结束（'+fmtMD(lastEnd)+' 24:00 截止）';
+  var graceEnd=new Date(segEndMs()+BACKFILL_GRACE_DAYS*86400000-1);
+  if(nowMs()>=segEndMs()+BACKFILL_GRACE_DAYS*86400000)
+    return '赛段已结束 · 补录期也已结束（'+fmtMD(graceEnd)+' 24:00 截止）';
+  if(nowMs()>=segEndMs())
+    return '赛段已结束 · 补录期内可补第 1–'+SEGMENT_DAYS+' 天（截止 '+fmtMD(graceEnd)+' 24:00）';
   if(nowMs()<segStartMs()) return '第 0/'+SEGMENT_DAYS+' 天 · 赛段 '+fmtMD(start)+' 开始（现在已可先录分）';
   return '第 '+currentDay()+'/'+SEGMENT_DAYS+' 天 · 在可录分窗口内（'+fmtMD(start)+'—'+fmtMD(lastEnd)+'，全天可录）';
 }
@@ -1052,7 +1066,8 @@ function renderCounter(){
     for(var k=1;k<=maxDay;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
   }
   sel.value=String(Math.min(d,maxDay));
-  sel.disabled=false;
+  /* ★ 2026-10-19：补录期内可用；补录期也过了才禁用（配合赛后补分） */
+  sel.disabled=!scoringOpen();
 
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
@@ -1065,7 +1080,7 @@ function renderCounter(){
   var hint=$('lockHint');
   /* ★ v4（3.4）：选中「今天」→ 文案与改动前逐字相同；选中过去某天 → 一句补录提醒（不新增元素）。
      ⚠️ 赛段结束后（录分已锁死）不显示"正在补录"，仍按原样提示"赛段已结束"，免得误导。 */
-  if(d!==naturalDay()&&segPhase()==='open') hint.textContent='正在补录 第'+d+'/'+SEGMENT_DAYS+' 天 · 补完记得切回今天';
+  if(d!==naturalDay()&&(segPhase()==='open'||segPhase()==='grace')) hint.textContent='正在补录 第'+d+'/'+SEGMENT_DAYS+' 天 · 补完记得切回今天';
   else hint.textContent=windowHint();     /* 模式无关：页面永远显示同一句，后门版看不出区别 */
   hint.classList.remove('hidden');
 }
@@ -1471,8 +1486,8 @@ function syncRenderStatus(){
   if(!el) return;
   var kind=SYNC.kind;
   var line=SYNC.msg;
-  if(!SYNC.token){ kind='err'; line='未配置钥匙：需要在设置里粘贴 GitHub 令牌'; }
-  if(!line) line=(SYNC.token?'已连接':'未配置钥匙：需要在设置里粘贴 GitHub 令牌');
+  /* ★ 2026-10-19：无令牌 ≠ 出错。无令牌是「只读模式」，照样能看云端分数。 */
+  if(!line) line=(SYNC.token?'已连接':'只读模式（可看云端分数）');
   var cls='syncstatus';
   if(kind==='ok') cls+=' ok'; else if(kind==='busy') cls+=' busy'; else if(kind==='err') cls+=' err';
   var t='上次同步：—';
@@ -1717,7 +1732,8 @@ function msgOf(p){ return 'jianfei sync '+(p&&p.compressed&&p.compressed.length?
 /* ---------- 拉取（云端更新才覆盖本地）---------- */
 function doPull(opt){
   opt=opt||{};
-  if(!SYNC.token){ syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌'); if(opt.manual) toast('还没配置钥匙：设置里粘贴 GitHub 令牌'); return Promise.resolve(false); }
+  /* ★ 2026-10-19 修复：读云端不需要令牌（公开仓库 GET 免鉴权）。
+     旧代码在这里无令牌直接 return，导致新设备永远是空白、分数显示 0。 */
   if(SYNC.pulling||SYNC.pushing) return Promise.resolve(false);
   SYNC.pulling=true;
   syncSet('busy','同步中…（拉取）');
