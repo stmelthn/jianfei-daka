@@ -1703,6 +1703,20 @@ function doUpload(opt){
           ORDER.forEach(function(_id){
             if(_id!==_me&&remote.players[_id]){ _m.players[_id]=remote.players[_id]; _kept.push(_id); }
           });
+          /* ★★ 皇冠/刀是全队共享的，个人设备无权改 —— 一律以云端为准。
+             否则任何人的旧设备一上传，就会把刚结算加的冠冲回去（10-19 实际发生过）。 */
+          if(_m.players&&_m.players[_me]&&remote.players&&remote.players[_me]){
+            var _mine={days:_m.players[_me].days||{},
+                       challenge:_m.players[_me].challenge,
+                       avatar:_m.players[_me].avatar,
+                       crowns:remote.players[_me].crowns,
+                       knives:remote.players[_me].knives};
+            _m.players[_me]=_mine;
+          }
+          ['settled','crownBase','lastTop2','segTitle','titleAuto','assassin',
+           'season','segment','segStart'].forEach(function(_f){
+            if(remote[_f]!==undefined) _m[_f]=remote[_f];
+          });
           putText=JSON.stringify(_m);
           try{ console.log('[同步] 仅上传 '+ROSTER[_me].name+' 的数据；保留云端 '+_kept.join('/')); }catch(e){}
         }
