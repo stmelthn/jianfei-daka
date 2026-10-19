@@ -65,12 +65,6 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .topseason .s1{font-size:17px;font-weight:900;color:var(--gold);letter-spacing:.5px;text-shadow:0 1px 0 #4a3200;}
 .topseason .s2{font-size:12.5px;color:#d8ece1;margin-top:2px;letter-spacing:.3px;}
 .gearbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:19px;flex:0 0 auto;}
-.testwrap{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.14);border-radius:999px;padding:3px 7px 3px 9px;flex:0 0 auto;}
-.testwrap span{font-size:11.5px;color:#fff;font-weight:700;}
-.switch{position:relative;width:40px;height:22px;border-radius:999px;background:#93a3ad;transition:background .15s;flex:0 0 auto;}
-.switch.on{background:#27c07a;}
-.switch i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
-.switch.on i{left:20px;}
 
 .welrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 3px 7px;}
 .wel{color:#fff;font-size:17px;font-weight:900;letter-spacing:.5px;}
@@ -218,7 +212,13 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 /* 设置面板 */
 .setrow{margin:11px 0;}
 .setrow label{display:block;font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:5px;}
-.setrow select,.setrow input[type=date],.setrow input[type=number]{width:100%;padding:10px;border-radius:9px;border:2px solid var(--line);font-size:14.5px;font-weight:700;font-family:inherit;background:#fff;}
+.setrow select,.setrow input[type=date],.setrow input[type=number],.setrow input[type=password]{width:100%;padding:10px;border-radius:9px;border:2px solid var(--line);font-size:14.5px;font-weight:700;font-family:inherit;background:#fff;}
+/* ☁ 云同步状态行 */
+.syncstatus{margin-top:8px;padding:8px 10px;border-radius:10px;background:#f2f8f4;border:1px solid #d8e8de;color:#28543c;font-size:12.5px;font-weight:800;line-height:1.45;word-break:break-all;}
+.syncstatus .syncwhen{font-weight:700;opacity:.72;margin-top:2px;}
+.syncstatus.ok{background:#eef7f1;border-color:#cdeadd;color:#0d5c30;}
+.syncstatus.busy{background:#fff8e2;border-color:#e8cf86;color:#a8720a;}
+.syncstatus.err{background:#fff2f2;border-color:#f0b7b7;color:#a01b1b;}
 .setrow .inline{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .dangerbtn{width:100%;padding:12px;border-radius:11px;background:#fff0f0;border:2px solid #f0b7b7;color:#a01b1b;font-weight:800;font-size:14.5px;}
 
@@ -247,10 +247,6 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <div class="s1">【s1-黎明之始】健康饮食打卡</div>
         <div class="s2" id="segLine">第3赛段</div>
       </div>
-      <div class="testwrap" id="testSwitchWrap" title="测试模式">
-        <span>测试</span>
-        <div class="switch" id="testSwitch"><i></i></div>
-      </div>
       <button class="gearbtn" id="btnGear" title="设置">⚙</button>
     </header>
 
@@ -269,7 +265,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     <div class="chalpanel">
       <h3>本期挑战 <span class="admin">（每人 1 条 · 这里只显示自己的）</span></h3>
       <div id="chalList"></div>
-      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+20</b> 挑战分（不受每日 4 分上限限制）。</div>
+      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+20</b> 挑战分（不受每日 5 分上限限制）。</div>
     </div>
 
     <div class="counter">
@@ -286,11 +282,12 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
       <div class="grid2">
         <button class="btn-ghost btn-plus" id="btnMeal">＋ 健康餐</button>
         <button class="btn-ghost btn-plus" id="btnWeigh">＋ 上称</button>
+        <button class="btn-ghost btn-plus" id="btnExercise">＋ 运动</button>
         <button class="btn-ghost btn-minus" id="btnUndo">－ 撤销</button>
-        <button class="btn-ghost" id="btnClear">清空本日</button>
+        <button class="btn-ghost" id="btnClear" style="grid-column:1/-1;">清空本日</button>
       </div>
 
-      <div class="note">计分说明：日常分（每天上限 <b>4</b> 分＝健康餐 <b>3</b> 顿封顶 ＋ 上称 1 次，健康餐满 3 顿后按钮锁住，上称可多记但只计 1 分）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分</div>
+      <div class="note">计分说明：日常分（每天上限 <b>5</b> 分＝健康餐 <b>3</b> 顿封顶 ＋ 上称 1 次 ＋ 运动 1 次，健康餐满 3 顿、运动满 1 次后按钮锁住，上称可多记但只计 1 分）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分</div>
 
       <button class="btn-primary save" id="btnSave">保 存</button>
       <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
@@ -337,12 +334,24 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
     <div class="setrow">
       <label>赛段起始日期（赛段号写死为第 3 赛段，改代码里的 SEG_NO 即可）</label>
+      <div class="note" style="margin-top:0;">计分窗口 = 起始日起 <b>7 天</b>：起始日 00:00 — 第 7 日 24:00 全天可录分（无时段限制）；第 7 日 00:00 起开放结算；窗口结束后计分键锁死（不补录）。</div>
       <input type="date" id="setStart"/>
     </div>
 
     <div class="setrow">
-      <label>测试模式</label>
-      <button class="btn-ghost" id="setToggleTest" style="width:100%;">切换</button>
+      <label>☁ 数据同步（四人共享同一份数据）</label>
+      <div class="note" style="margin-top:0;">粘一次 <b>GitHub 令牌</b>（Personal access token：经典令牌勾 <b>repo</b>；细粒度令牌给 <b>Contents: Read and write</b>）。令牌只存在<b>本机浏览器</b>里，<b>不会</b>写进仓库或页面源码。四个人、每台设备各粘一次即可。</div>
+      <input type="password" id="setToken" autocomplete="off" spellcheck="false" placeholder="粘贴 GitHub 令牌（ghp_… / github_pat_…）"/>
+      <div class="inline" style="margin-top:8px;">
+        <button class="btn-ghost" id="btnTokenSave">保存钥匙</button>
+        <button class="btn-ghost" id="btnTokenClear">清除钥匙</button>
+      </div>
+      <div class="syncstatus" id="syncStatus">未配置钥匙：需要在设置里粘贴 GitHub 令牌</div>
+      <div class="inline" style="margin-top:8px;">
+        <button class="btn-ghost" id="btnSyncPush">↻ 立即同步（上传）</button>
+        <button class="btn-ghost" id="btnSyncPull">⬇ 拉取云端数据</button>
+      </div>
+      <div class="note" style="margin-top:8px;">自动同步：改分 / 点保存后 <b>5 秒</b>自动上传；页面开着时每 <b>45 秒</b>探测一次云端（<b>ETag 条件请求</b>：云端没变只回一个 0 字节的 304，不下载正文、不重画；画面不可见就停）。冲突按 <b>updatedAt（最后改动时间）</b>取新的那份，不会无脑覆盖。</div>
     </div>
 
     <div class="setrow">
@@ -388,14 +397,26 @@ var SEASON='s1-黎明之始';
 var SEG_NO=3;                                  /* ←★ 赛段号写死在这里 */
 var INIT_CROWNS={hyt:0, gd:1, clm:2, lmh:1};   /* 蛋蛋2👑 栋栋1👑 西瓜1👑 芋头0👑 */
 var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
-var MAX_MEALS=3, MAX_WEIGH=1, DAY_CAP=4, CHALLENGE_PTS=20;
+var MAX_MEALS=3, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=5, CHALLENGE_PTS=20;
 var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 前二名各得 6r */
 var KING_FEE=10, DUKE_FEE=5;   /* 赛季敬献：河贼王 10r/人，河贼公 5r/人 */
 var STORE_KEY='jianfei_score_v2';
 /* ★ 本期刺客写死为芋头（hyt）：设置面板不再开放修改，下一期再补充刺客计算规则 */
 var ASSASSIN_ID='hyt';
-var SCORING_FROM=6, SCORING_TO=23;
+/* ★★ 开发模式开关（默认 false＝正式版）。
+   ① 开发者要长期解锁：把下面 false 改成 true；
+   ② 临时后门：用带参数的网址打开 → ?dev=1（不写进界面、页面上无任何提示）。
+   DEV_MODE=true 时：计分 / 结算 / 时间锁全部放开。 */
+var DEV_MODE=false;
+try{ if(/[?&]dev=1(?:&|$)/.test(String(location.search||''))) DEV_MODE=true; }catch(e){}
+/* ★ 赛段起始日：计分窗口 = 起始日 00:00 起，共 7 天（第 7 日 24:00 止） */
+var SEG_START_DEF='2026-10-12';
 var SEGMENT_DAYS=7;
+/* ★ 2026-10-19 新增：赛后补录期。
+   赛段正常结束后，再宽限 BACKFILL_GRACE_DAYS 天，此期间仍可补录第 1..7 天的分（不得录未来）。
+   作用：大家中间漏记了分，赛段一结束就锁死补不了 → 给一个补录窗口。
+   改这里就能调长短（0 = 关闭赛后补录，和以前一样一到点就锁）。 */
+var BACKFILL_GRACE_DAYS=3;
 var CHAL_REVISION_LIMIT=1;     /* 挑战保存后允许再改的次数（1 次，改过就锁） */
 var CROWN_MAX=3;               /* 一赛季最多 3 冠 */
 
@@ -416,10 +437,10 @@ function freshState(){
   return {
     season:SEASON,
     segment:SEG_NO,
-    segStart:'2026-10-12',
+    updatedAt:0,                 /* ★ 本地最后变更时间（毫秒）；0 = 本机从来没改过（用于云端同步取新） */
+    segStart:SEG_START_DEF,
     players:players,
     currentUser:null,
-    testMode:true,
     titleAuto:true,
     segTitle:{king:null,duke:null},
     assassin:ASSASSIN_ID,
@@ -434,9 +455,9 @@ function migrate(s){
   var base=freshState();
   base.season=SEASON;                 /* ★ 赛季以代码常量为准（改了 SEASON 即切换，变更前的已自动备份） */
   base.segment=SEG_NO;
-  base.segStart=s.segStart||'2026-10-12';
+  base.updatedAt=Number(s.updatedAt)||0;      /* ★ 云端同步用：沿用原值，别在迁移时刷新 */
+  base.segStart=s.segStart||SEG_START_DEF;
   base.currentUser=s.currentUser||null;
-  base.testMode=(s.testMode===undefined)?true:!!s.testMode;
   base.dayOverride=(s.dayOverride===undefined)?null:s.dayOverride;
   base.settled=!!s.settled;
   if(s.crownBase&&typeof s.crownBase==='object'){
@@ -460,7 +481,14 @@ function migrate(s){
   ORDER.forEach(function(id){
     var p=(s.players&&s.players[id])||{};
     var d=base.players[id];
-    if(p.days&&typeof p.days==='object') d.days=p.days;
+    if(p.days&&typeof p.days==='object'){   /* ★ 兼容旧数据：缺 exercise 一律补 0，不报错、不丢旧数据 */
+      var dd={};
+      for(var dk in p.days){ if(!Object.prototype.hasOwnProperty.call(p.days,dk)) continue;
+        var dv=p.days[dk]||{};
+        dd[dk]={meals:Number(dv.meals)||0, weigh:Number(dv.weigh)||0, exercise:Number(dv.exercise)||0};
+      }
+      d.days=dd;
+    }
     if(typeof p.crowns==='number') d.crowns=Math.max(0,Math.min(CROWN_MAX,p.crowns));
     if(typeof p.knives==='number') d.knives=p.knives;
     if(p.challenge){
@@ -528,11 +556,36 @@ function load(){
     return migrate(JSON.parse(raw));
   }catch(e){ return freshState(); }
 }
-function save(){
+/* ★ 内容指纹：忽略 updatedAt，用来判断「这次 save 是不是真把数据改了」。
+   头像（可能几 MB 的 base64）只取长度+前 40 字做指纹，避免每次点 +1 都做一次大字符串拷贝。 */
+var lastSig='';
+function stateSig(){
+  try{
+    return JSON.stringify(state,function(k,v){
+      if(k==='updatedAt') return undefined;
+      if(k==='avatar'&&typeof v==='string') return '#'+v.length+':'+v.slice(0,40);
+      return v;
+    });
+  }catch(e){ return ''; }
+}
+/* save(opt)：opt.quiet=true → 只落盘，不刷新 updatedAt、不触发自动上传
+   （登入/登出/应用云端数据时用，避免把本机「较旧」的数据盖到云端） */
+function save(opt){
+  var quiet=!!(opt&&opt.quiet);
+  var sig=stateSig();
+  var changed=(sig!==lastSig);
+  if(!quiet&&changed) state.updatedAt=Date.now();     /* ★ 每次本地变更刷新 updatedAt */
   try{ localStorage.setItem(STORE_KEY,JSON.stringify(state)); }catch(e){}
+  if(changed){
+    lastSig=sig;
+    if(!quiet&&!SYNC.applying) schedulePush();        /* 防抖 2 秒 → 自动上传 */
+  }
 }
 checkRollover();   /* ★ 先做变更检测，再读状态 */
 var state=load();
+/* ★ v4（3.3）：dayOverride 不跨会话持久化 —— 每次打开页面一律回到「今天」。
+   只在本次会话内存里有效；要补录就往下拉框主动选一天。防"选过第3天之后每次打开都误录"。 */
+state.dayOverride=null;
 var cardPage=1;
 var LAST_S=null;
 var editTarget=null;
@@ -542,32 +595,72 @@ var chalDraft={};      /* 未点保存的挑战草稿（只在内存，不进 st
 /* =========================================================
    3. 时间 / 赛段
    ========================================================= */
-function todayDate(){ var d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+/* ---------- 当前时间（唯一入口，测试接口可伪装）---------- */
+var nowOverride=null;      /* 毫秒；null = 用真实时间（仅 APP._now 调试用） */
+function nowMs(){ return (nowOverride===null)?Date.now():nowOverride; }
+function nowDate(){ var d=new Date(nowMs()); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function todayDate(){ return nowDate(); }
 function fmtMD(d){ return (d.getMonth()+1)+'月'+d.getDate()+'日'; }
 function segStartDate(){
-  var p=String(state.segStart||'2026-10-12').split('-');
+  var p=String(state.segStart||SEG_START_DEF).split('-');
   return new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
 }
-function naturalDay(){
-  var diff=Math.round((todayDate()-segStartDate())/86400000)+1;
-  return Math.min(SEGMENT_DAYS,Math.max(1,diff));
+/* ★ 赛段窗口 = [起始日 00:00, 起始日+7天 00:00)：第 1 天 00:00 → 第 7 天 24:00 */
+function segStartMs(){ return segStartDate().getTime(); }
+function segEndMs(){ return segStartMs()+SEGMENT_DAYS*86400000; }
+function segPhase(){
+  var t=nowMs();
+  if(t<segStartMs()) return 'before';      /* 赛段未开始 */
+  if(t<segEndMs())  return 'open';         /* 窗口内：全天 24 小时可录分 */
+  if(t<segEndMs()+BACKFILL_GRACE_DAYS*86400000) return 'grace';  /* ★ 赛后补录期 */
+  return 'ended';                         /* 完全结束：录分锁死 */
 }
+function rawDay(){ return Math.round((nowDate()-segStartDate())/86400000)+1; }
+function naturalDay(){ return Math.min(SEGMENT_DAYS,Math.max(1,rawDay())); }
 function currentDay(){
-  if(state.testMode&&state.dayOverride) return state.dayOverride;
+  /* ★ v4：正式模式也认 dayOverride（补录往期）；上限 = 今天（DEV 为 1..7），下限 1 */
+  if(state.dayOverride){
+    var hi=(DEV_MODE?SEGMENT_DAYS:naturalDay());
+    return Math.min(hi,Math.max(1,state.dayOverride|0));
+  }
   return naturalDay();
 }
-function editId(){ return (state.testMode&&editTarget)?editTarget:state.currentUser; }
+function editId(){ return (DEV_MODE&&editTarget)?editTarget:state.currentUser; }
 function me(){ return state.currentUser; }
 
-function nowHour(){ return new Date().getHours(); }
-function scoringOpen(){ if(state.testMode) return true; var h=nowHour(); return h>=SCORING_FROM&&h<SCORING_TO; }
-function settleOpen(){ if(state.testMode) return true; return currentDay()>=SEGMENT_DAYS; }
+/* ---------- 时间锁 ---------- */
+/* 计分：从现在起（含 10/12 开赛前的热身期）一直到【第 7 天 24:00】全天 24 小时都能录；
+   10/19 00:00 起一律锁死（录分结束，不补录）。已无 06:00–23:00 时段限制。 */
+function scoringOpen(){
+  if(DEV_MODE) return true;
+  /* ★ 2026-10-19：赛段结束后还有 BACKFILL_GRACE_DAYS 天的补录期，此期间仍可录分（补录往期） */
+  return nowMs()<segEndMs()+BACKFILL_GRACE_DAYS*86400000;
+}
+/* 结算：第 7 天（最后一天）0 点起开放，即 10/18 00:00 起；录分截止后依然可点 */
+function settleOpen(){
+  if(DEV_MODE) return true;
+  if(nowMs()>=segEndMs()) return true;                            /* 录分结束后：结算键一直能点 */
+  return nowMs()>=segStartMs()+(SEGMENT_DAYS-1)*86400000;         /* 第 7 天 0 点起 */
+}
+/* 给用户看的窗口提示：第 X/7 天 + 是否在可录分窗口。
+   （正式版和后门版显示同一句，页面看不出区别） */
+function windowHint(){
+  var start=segStartDate();
+  var lastEnd=new Date(segEndMs()-1);          /* 第 7 天 24:00 */
+  var graceEnd=new Date(segEndMs()+BACKFILL_GRACE_DAYS*86400000-1);
+  if(nowMs()>=segEndMs()+BACKFILL_GRACE_DAYS*86400000)
+    return '赛段已结束 · 补录期也已结束（'+fmtMD(graceEnd)+' 24:00 截止）';
+  if(nowMs()>=segEndMs())
+    return '赛段已结束 · 补录期内可补第 1–'+SEGMENT_DAYS+' 天（截止 '+fmtMD(graceEnd)+' 24:00）';
+  if(nowMs()<segStartMs()) return '第 0/'+SEGMENT_DAYS+' 天 · 赛段 '+fmtMD(start)+' 开始（现在已可先录分）';
+  return '第 '+currentDay()+'/'+SEGMENT_DAYS+' 天 · 在可录分窗口内（'+fmtMD(start)+'—'+fmtMD(lastEnd)+'，全天可录）';
+}
 
 /* =========================================================
    4. 计分
    ========================================================= */
 function getDay(id,d){
-  if(!state.players[id].days[d]) state.players[id].days[d]={meals:0,weigh:0};
+  if(!state.players[id].days[d]) state.players[id].days[d]={meals:0,weigh:0,exercise:0};
   return state.players[id].days[d];
 }
 function dayScore(id,d){
@@ -575,7 +668,8 @@ function dayScore(id,d){
   if(!dt) return 0;
   var m=Math.min(dt.meals||0,MAX_MEALS);
   var w=Math.min(dt.weigh||0,MAX_WEIGH);
-  return m+w;
+  var e=Math.min(dt.exercise||0,MAX_EXERCISE);   /* ★ 运动每天只计 1 分 */
+  return m+w+e;
 }
 function challengePts(id){
   var c=state.players[id].challenge;
@@ -599,7 +693,7 @@ function rankOf(id){
 }
 function daysChecked(id){
   var n=0;
-  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0)) n++; }
+  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0||(dt.exercise||0)>0)) n++; }
   return n;
 }
 function fullMealDays(id){
@@ -842,8 +936,6 @@ function crownStageHTML(id,lv,knife){
 function renderHeader(){
   var d=todayDate();
   $('segLine').textContent='第'+state.segment+'赛段 · '+fmtMD(d)+' · 第 '+currentDay()+'/'+SEGMENT_DAYS+' 天';
-  var sw=$('testSwitch');
-  if(state.testMode) sw.classList.add('on'); else sw.classList.remove('on');
   var id=me();
   $('welLine').textContent=(id?'欢迎 '+ROSTER[id].name+' 👋':'欢迎');
 }
@@ -859,7 +951,7 @@ function renderBoard(){
     li.innerHTML='<span class="rk">'+rank+'</span><span class="av">'+avatarInner(r.id)+'</span>'+
       '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
       '<span class="pt">'+r.score+'</span>';
-    li.title=ROSTER[r.id].name+'：日常分 '+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score;
+    li.title=ROSTER[r.id].name+'：日常分（三餐＋上称＋运动）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score;
     ul.appendChild(li); rank++;
   });
   renderBoardChal();
@@ -942,51 +1034,55 @@ function renderCounter(){
   var id=editId();
   if(!id){ return; }
   var d=currentDay();
-  var dt=state.players[id].days[d]||{meals:0,weigh:0};
-  var m=dt.meals||0, w=dt.weigh||0;
-  var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH);
+  var dt=state.players[id].days[d]||{meals:0,weigh:0,exercise:0};
+  var m=dt.meals||0, w=dt.weigh||0, e=dt.exercise||0;
+  var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH), ec=Math.min(e,MAX_EXERCISE);
   var mealFull=(m>=MAX_MEALS);          /* ★ 健康餐满 3 顿 → 锁住 */
+  var exFull=(e>=MAX_EXERCISE);         /* ★ 运动满 1 次 → 锁住（每天最多 1 次） */
   var overWeigh=(w>MAX_WEIGH);
 
   var who='<div class="av">'+avatarInner(id)+'</div><b>'+ROSTER[id].name+'</b>';
   who+=myBadgeHTML(id);
-  if(state.testMode&&editTarget&&editTarget!==me()) who+='<span style="font-size:11px;color:#b07a00;font-weight:800;">（测试代填）</span>';
+  if(DEV_MODE&&editTarget&&editTarget!==me()) who+='<span style="font-size:11px;color:#b07a00;font-weight:800;">（测试代填）</span>';
   if(me()===id&&!editTarget) who+='<button class="btn-ghost" id="btnAvatar" style="padding:4px 9px;font-size:12px;border-radius:9px;margin-left:2px;">换头像</button>';
   $('counterWho').innerHTML=who;
 
   var dscore=dailyScore(id), cpts=challengePts(id);
   $('counterStat').innerHTML=
-    '第 '+d+' 天：健康餐 '+m+'/'+MAX_MEALS+' 餐 <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 上称 '+w+' 次 <span class="cap">（计 '+wc+' 分）</span><br/>'+
-    '本日得分 <b>'+(mc+wc)+'</b> / '+DAY_CAP+' 分 &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
+    '第 '+d+' 天：健康餐 '+m+'/'+MAX_MEALS+' 餐 <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 上称 '+w+' 次 <span class="cap">（计 '+wc+' 分）</span> · 运动 '+e+'/'+MAX_EXERCISE+' 次 <span class="cap">（计 '+ec+' 分'+(exFull?' · 已满':'')+'）</span><br/>'+
+    '本日得分 <b>'+(mc+wc+ec)+'</b> / '+DAY_CAP+' 分（健康餐 '+mc+' 餐 + 上称 '+wc+' + 运动 '+ec+'） &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
     '<span class="cap">（日常 '+dscore+' ＋ 挑战 '+cpts+'）</span>'+
+    '<br/><span class="cap">超出部分不计分（每日上限 '+DAY_CAP+' 分：'+MAX_MEALS+'餐 + '+MAX_WEIGH+'上称 + '+MAX_EXERCISE+'运动）</span>'+
     (mealFull?'<br/><span class="cap">健康餐 '+MAX_MEALS+'/'+MAX_MEALS+' 已满 · 上称可多记但只计 1 分</span>':'')+
+    (exFull?'<br/><span class="cap">运动 '+MAX_EXERCISE+'/'+MAX_EXERCISE+' 已满（每天只计 1 分）</span>':'')+
     (overWeigh?'<br/><span class="cap">上称超出部分不计分（每天只计 1 分）</span>':'');
 
   var sel=$('daySelect');
-  if(sel.options.length!==SEGMENT_DAYS){
+  /* ★ v4（3.1）：选项 1..maxDay。正式模式 maxDay=今天（未来天不进选项，防提前录分）；DEV 模式仍是 1..7。
+     选择器正式模式也放开，用于补录往期天数。 */
+  var maxDay=(DEV_MODE?SEGMENT_DAYS:naturalDay());
+  if(sel.options.length!==maxDay){
     sel.innerHTML='';
-    for(var k=1;k<=SEGMENT_DAYS;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
+    for(var k=1;k<=maxDay;k++){ var o=document.createElement('option'); o.value=k; o.textContent='第'+k+'天'; sel.appendChild(o); }
   }
-  sel.value=String(d);
-  sel.disabled=!state.testMode;
+  sel.value=String(Math.min(d,maxDay));
+  /* ★ 2026-10-19：补录期内可用；补录期也过了才禁用（配合赛后补分） */
+  sel.disabled=!scoringOpen();
 
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
   $('btnWeigh').disabled=!open;             /* 上称可一直点（只计 1 分） */
+  $('btnExercise').disabled=!open||exFull;  /* ★ 运动满 1 次锁住（每天最多 1 次） */
   $('btnUndo').disabled=!open;
   $('btnClear').disabled=!open;
   $('btnSettle').disabled=!settleOpen();
 
   var hint=$('lockHint');
-  if(!state.testMode&&(!open||!settleOpen())){
-    var msgs=[];
-    if(!open) msgs.push('计分时间 06:00–23:00 之外已锁住（防误触）');
-    if(!settleOpen()) msgs.push('第 '+SEGMENT_DAYS+' 天开放结算');
-    hint.textContent=msgs.join('；');
-    hint.classList.remove('hidden');
-  }else{
-    hint.classList.add('hidden');
-  }
+  /* ★ v4（3.4）：选中「今天」→ 文案与改动前逐字相同；选中过去某天 → 一句补录提醒（不新增元素）。
+     ⚠️ 赛段结束后（录分已锁死）不显示"正在补录"，仍按原样提示"赛段已结束"，免得误导。 */
+  if(d!==naturalDay()&&(segPhase()==='open'||segPhase()==='grace')) hint.textContent='正在补录 第'+d+'/'+SEGMENT_DAYS+' 天 · 补完记得切回今天';
+  else hint.textContent=windowHint();     /* 模式无关：页面永远显示同一句，后门版看不出区别 */
+  hint.classList.remove('hidden');
 }
 function renderAll(){
   LAST_S=computeSettlement();
@@ -1017,6 +1113,15 @@ function addWeigh(){
   undoStack.push({id:id,day:d,field:'weigh',delta:dt.weigh-before});
   save(); renderAll();
 }
+function addExercise(){                   /* ★ 运动：每天最多 1 次，1 次 = 1 分 */
+  if(!scoringOpen()) return;
+  var id=editId(), d=currentDay(), dt=getDay(id,d);
+  var before=(dt.exercise||0);
+  if(before>=MAX_EXERCISE){ toast("运动今天已打卡（每天最多 "+MAX_EXERCISE+" 次）"); return; }   /* ★ 锁 1 次 */
+  dt.exercise=Math.min(before+1,MAX_EXERCISE);
+  undoStack.push({id:id,day:d,field:'exercise',delta:dt.exercise-before});
+  save(); renderAll();
+}
 function undo(){
   if(!scoringOpen()) return;
   var a=undoStack.pop();
@@ -1028,7 +1133,7 @@ function undo(){
 function clearDay(){
   if(!scoringOpen()) return;
   var id=editId(), d=currentDay();
-  state.players[id].days[d]={meals:0,weigh:0};
+  state.players[id].days[d]={meals:0,weigh:0,exercise:0};
   undoStack=[];
   save(); renderAll(); toast('已清空第'+d+'天');
 }
@@ -1046,7 +1151,7 @@ function crownBaseSnapshot(){
    ① 从基准恢复皇冠（撑销上一次加给前二名的 +1）→ ② 当前前二名各 +1（上限 3）→ ③ 再弹卡片。
    总分/排名没变时重复点，结果完全一样（幂等），跨多次结算不会无限叠加。 */
 function openSettle(){
-  if(!settleOpen()){ toast('第 '+SEGMENT_DAYS+' 天开放结算'); return; }
+  if(!settleOpen()){ toast('第 '+SEGMENT_DAYS+' 天（'+fmtMD(new Date(segEndMs()-86400000))+'）起可结算'); return; }
   if(!state.crownBase) state.crownBase=crownBaseSnapshot();
   var before={};
   ORDER.forEach(function(id){ before[id]=state.players[id].crowns; });
@@ -1186,11 +1291,13 @@ function showMain(){
 }
 function loginAs(id){
   state.currentUser=id; editTarget=null; undoStack=[]; chalDraft={};
-  save(); showMain(); toast('欢迎，'+ROSTER[id].name+'！');
+  save({quiet:true});          /* ★ 登录状态是本机的事：不刷 updatedAt，也不触发上传 */
+  showMain(); toast('欢迎，'+ROSTER[id].name+'！');
+  if(SYNC.token) doPull({});
 }
 function logout(){
   state.currentUser=null; editTarget=null; chalDraft={};
-  save(); showLogin();
+  save({quiet:true}); showLogin();
 }
 
 /* =========================================================
@@ -1205,6 +1312,12 @@ function openSettings(){
   opts($('setKing'),state.segTitle.king,'河贼王');
   opts($('setDuke'),state.segTitle.duke,'河贼公');
   $('setStart').value=state.segStart;
+  var ti=$('setToken');
+  if(ti){
+    ti.value='';
+    ti.placeholder=SYNC.token?'已保存钥匙（本机）· 粘贴新令牌可替换':'粘贴 GitHub 令牌（ghp_… / github_pat_…）';
+  }
+  syncRenderStatus();
   $('settingsModal').classList.remove('hidden');
 }
 function closeSettings(){ $('settingsModal').classList.add('hidden'); }
@@ -1265,21 +1378,19 @@ function bind(){
   $('btnLogout').onclick=logout;
   $('btnMeal').onclick=addMeal;
   $('btnWeigh').onclick=addWeigh;
+  $('btnExercise').onclick=addExercise;
   $('btnUndo').onclick=undo;
   $('btnClear').onclick=clearDay;
   $('btnSave').onclick=function(){ save(); toast('已保存到本机'); };
   $('btnSettle').onclick=openSettle;
 
   $('daySelect').onchange=function(){
-    if(!state.testMode){ renderCounter(); return; }
-    state.dayOverride=parseInt(this.value,10); undoStack=[];
+    /* ★ v4：正式模式同样生效（补录往期），值夹到 [1, 今天]；DEV 模式仍可选 1..7 */
+    var n=parseInt(this.value,10);
+    if(!(n>=1)) n=naturalDay();
+    var hi=(DEV_MODE?SEGMENT_DAYS:naturalDay());
+    state.dayOverride=Math.min(hi,Math.max(1,n)); undoStack=[];
     save(); renderAll();
-  };
-  $('testSwitch').onclick=function(){
-    state.testMode=!state.testMode;
-    if(!state.testMode) editTarget=null;
-    save(); renderAll();
-    toast(state.testMode?'测试模式：计分键 + 结算键均可点':'正式模式：按时间锁住');
   };
 
   function pickAvatar(){
@@ -1308,7 +1419,6 @@ function bind(){
   $('setDuke').onchange=applySettings;
   $('setStart').onchange=applySettings;
   $('setAutoTitle').onclick=function(){ state.titleAuto=true; state.segTitle={king:null,duke:null}; save(); renderAll(); openSettings(); toast('已切回自动称号'); };
-  $('setToggleTest').onclick=function(){ state.testMode=!state.testMode; save(); renderAll(); openSettings(); };
   $('btnReset').onclick=openConfirm;
   $('confirmCancel').onclick=closeConfirm;
   $('confirmOk').onclick=doReset;
@@ -1319,10 +1429,494 @@ function bind(){
 }
 
 /* =========================================================
+   ☁ 云端同步（GitHub 仓库里的 cloud.json · 四端共享同一份数据）
+   ---------------------------------------------------------
+   权威源 = 同仓库文件 cloud.json（内容 = 完整 state）
+   读：GET api.github.com/repos/.../contents/cloud.json（公开仓库，无需鉴权）
+   写：PUT 同路径，带 Authorization: Bearer <token>
+   令牌只存本机 localStorage（jianfei_gh_token）——绝不写进页面/仓库任何文件
+   ========================================================= */
+var SYNC={
+  TOKEN_KEY:'jianfei_gh_token',                       /* ★ 令牌只存在这里（浏览器本机） */
+  API:'https://api.github.com/repos/stmelthn/jianfei-daka/contents/cloud.json',
+  POLL_MS:45000,         /* ★ 页面可见时每 45 秒「探测」一次云端（ETag 条件请求） */
+  BACKOFF_MS:60000,      /* 钥匙无效/无权限时退避到 60 秒一次 */
+  DEBOUNCE_MS:5000,      /* ★ 本地改分后防抖 5 秒自动上传 */
+  AVATAR_LIMIT:200*1024, /* 单个头像超过 200KB → 上传前压缩 */
+  CLOUD_LIMIT:900*1024,  /* 整个 cloud.json 超过 900KB → 提示清头像 */
+  token:'', kind:'none', msg:'', lastSync:0,
+  authFailed:false, pollTimer:null, pushTimer:null,
+  pushing:false, pulling:false, queued:false, remoteSha:null,
+  /* ★ ETag 条件请求：云端内容没变时服务端回 304（0 字节）→ 不下载正文、不解析、不渲染。
+     etag 只存在内存里（刷新页面重新拿一次即可，不必进 localStorage）。 */
+  etag:null,          /* 上次看到的内容 ETag（= 云端文件的 blob sha） */
+  probing:false       /* 正在探测（防重入） */
+};
+
+/* ---------- base64（UTF-8 安全）---------- */
+function b64Encode(str){
+  var s=String(str);
+  try{ return btoa(unescape(encodeURIComponent(s))); }
+  catch(e){}
+  try{
+    var u=new TextEncoder().encode(s), bin='';
+    for(var i=0;i<u.length;i++) bin+=String.fromCharCode(u[i]);
+    return btoa(bin);
+  }catch(e2){ return ''; }
+}
+function b64Decode(b64){
+  var clean=String(b64||'').replace(/[\s\r\n]/g,'');
+  var bin=atob(clean);
+  try{ return decodeURIComponent(escape(bin)); }catch(e){}
+  try{
+    if(window.TextDecoder){
+      var u=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+      return new TextDecoder('utf-8').decode(u);
+    }
+  }catch(e2){}
+  return bin;
+}
+function utf8Bytes(s){ try{ return unescape(encodeURIComponent(String(s))).length; }catch(e){ return String(s).length; } }
+function two(n){ return (n<10?'0':'')+n; }
+
+/* ---------- 状态行 ---------- */
+function syncRenderStatus(){
+  var el=document.getElementById('syncStatus');
+  if(!el) return;
+  var kind=SYNC.kind;
+  var line=SYNC.msg;
+  /* ★ 2026-10-19：无令牌 ≠ 出错。无令牌是「只读模式」，照样能看云端分数。 */
+  if(!line) line=(SYNC.token?'已连接':'只读模式（可看云端分数）');
+  var cls='syncstatus';
+  if(kind==='ok') cls+=' ok'; else if(kind==='busy') cls+=' busy'; else if(kind==='err') cls+=' err';
+  var t='上次同步：—';
+  if(SYNC.lastSync){
+    var d=new Date(SYNC.lastSync);
+    t='上次同步：'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+two(d.getHours())+':'+two(d.getMinutes())+':'+two(d.getSeconds());
+  }
+  el.className=cls;
+  el.innerHTML='<div>'+esc(line)+'</div><div class="syncwhen">'+esc(t)+'</div>';
+}
+function syncSet(kind,msg){
+  if(kind) SYNC.kind=kind;
+  if(msg!==undefined&&msg!==null) SYNC.msg=String(msg);
+  syncRenderStatus();
+}
+
+/* ---------- 令牌 ---------- */
+function syncLoadToken(){
+  try{ SYNC.token=(localStorage.getItem(SYNC.TOKEN_KEY)||'').trim(); }catch(e){ SYNC.token=''; }
+}
+function syncSetToken(t){
+  t=String(t||'').trim();
+  if(!t) return false;
+  SYNC.token=t; SYNC.authFailed=false;
+  try{ localStorage.setItem(SYNC.TOKEN_KEY,t); }catch(e){}
+  syncSet('ok','钥匙已保存（只存在本机浏览器，不会写进仓库）');
+  return true;
+}
+function syncClearToken(){
+  SYNC.token=''; SYNC.authFailed=false; SYNC.remoteSha=null; SYNC.etag=null;
+  try{ localStorage.removeItem(SYNC.TOKEN_KEY); }catch(e){}
+  clearTimeout(SYNC.pushTimer); clearTimeout(SYNC.pollTimer); SYNC.pollTimer=null;
+  syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
+}
+
+/* ---------- HTTP ---------- */
+function ghHeaders(auth){
+  var h={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+  if(auth&&SYNC.token) h['Authorization']='Bearer '+SYNC.token;
+  return h;
+}
+function httpErr(r){
+  var e=new Error('HTTP '+r.status); e.status=r.status;
+  return r.text().then(function(t){ e.body=t; return e; },function(){ return e; }).then(function(er){ throw er; });
+}
+/* 读云端：404 = 文件还不存在（sha 为 null，直接新建） */
+function cloudGet(){
+  return fetch(SYNC.API+'?ts='+Date.now(),{method:'GET',headers:ghHeaders(true),cache:'no-store'}).then(function(r){
+    try{ var _et=r.headers.get('ETag'); if(_et) SYNC.etag=_et; }catch(e){}
+    if(r.status===404) return {exists:false,sha:null,json:null};
+    if(!r.ok) return httpErr(r);
+    return r.json().then(function(j){
+      var txt='';
+      try{ txt=b64Decode(j&&j.content); }catch(e){ txt=''; }
+      var parsed=null;
+      try{ parsed=JSON.parse(txt); }catch(e){ parsed=null; }
+      return {exists:true,sha:(j&&j.sha)||null,json:parsed};
+    });
+  });
+}
+/* 写云端：必须先拿到 sha（否则 409） */
+function cloudPut(text,sha,msg){
+  var body={message:msg||('jianfei sync '+new Date().toISOString()),content:b64Encode(text)};
+  if(sha) body.sha=sha;
+  var h=ghHeaders(true); h['Content-Type']='application/json';
+  return fetch(SYNC.API,{method:'PUT',headers:h,body:JSON.stringify(body)}).then(function(r){
+    if(!r.ok) return httpErr(r);
+    /* ★ 上传后立刻把本机 etag 换成「刚写进去的这一版」：
+       contents 接口 GET 的 ETag 恰好 ＝ 该文件的 blob sha ＝ 本次 PUT 返回的 content.sha，
+       所以下次轮询直接命中 304，不会因为刚上传完又整文拉一遍。拿不到 sha → 置空，下次整文 GET 再校准。 */
+    return r.json().then(function(j){
+      var blob=(j&&j.content&&j.content.sha)||null;
+      SYNC.etag=blob?('"'+blob+'"'):null;
+      return j;
+    });
+  });
+}
+
+/* ---------- 头像压缩 / 上传体积检查 ---------- */
+function avatarBytes(a){
+  if(!a||typeof a!=='string') return 0;
+  var i=a.indexOf(',');
+  var b=(i>=0)?a.slice(i+1):a;
+  var pad=0;
+  while(b.length-pad>0&&b.charAt(b.length-1-pad)==='=') pad++;
+  return Math.max(0,Math.floor(b.length*3/4)-pad);
+}
+function compressAvatar(src){
+  return new Promise(function(resolve){
+    var done=false;
+    function fin(v){ if(!done){ done=true; resolve(v); } }
+    try{
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+          if(!w||!h) return fin(src);
+          var sc=Math.min(1,240/Math.max(w,h));                 /* 最长边 ≤ 240px */
+          var cw=Math.max(1,Math.round(w*sc)), ch=Math.max(1,Math.round(h*sc));
+          var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+          var cx=cv.getContext('2d');
+          cx.fillStyle='#ffffff'; cx.fillRect(0,0,cw,ch);       /* jpeg 无透明通道，先铺白底 */
+          cx.drawImage(img,0,0,cw,ch);
+          var out=cv.toDataURL('image/jpeg',0.7);
+          fin((out&&out.length<src.length)?out:src);
+        }catch(e){ fin(src); }
+      };
+      img.onerror=function(){ fin(src); };
+      img.src=src;
+    }catch(e){ fin(src); }
+  });
+}
+function buildCloudPayload(){
+  var snap;
+  try{ snap=JSON.parse(JSON.stringify(state)); }catch(e){ return Promise.resolve({error:'本地数据无法序列化'}); }
+  snap.updatedAt=Number(state.updatedAt)||Date.now();
+  var jobs=[];
+  ORDER.forEach(function(id){
+    var a=snap.players[id]&&snap.players[id].avatar;
+    if(a&&avatarBytes(a)>SYNC.AVATAR_LIMIT) jobs.push(id);
+  });
+  var chain=Promise.resolve();
+  jobs.forEach(function(id){
+    chain=chain.then(function(){
+      return compressAvatar(snap.players[id].avatar).then(function(na){
+        snap.players[id].avatar=na;
+        console.log('[同步] 头像压缩：'+ROSTER[id].name+' → '+Math.round(avatarBytes(na)/1024)+'KB');
+      });
+    });
+  });
+  return chain.then(function(){
+    var text=JSON.stringify(snap);
+    var bytes=utf8Bytes(text);
+    return {text:text,bytes:bytes,oversize:bytes>SYNC.CLOUD_LIMIT,compressed:jobs};
+  });
+}
+
+/* ---------- 本地是否有实质数据（判断首次同步方向）---------- */
+function stateHasData(s){
+  if(!s||typeof s!=='object') return false;
+  if(Number(s.updatedAt)>0) return true;
+  if(s.settled) return true;
+  for(var i=0;i<ORDER.length;i++){
+    var p=s.players&&s.players[ORDER[i]];
+    if(!p) continue;
+    if(p.avatar) return true;
+    var c=p.challenge;
+    if(c&&(c.text||c.done||c.saved)) return true;
+    for(var d=1;d<=SEGMENT_DAYS;d++){
+      var dt=p.days&&p.days[d];
+      if(dt&&((dt.meals||0)>0||(dt.weigh||0)>0||(dt.exercise||0)>0)) return true;
+    }
+  }
+  return false;
+}
+
+/* ---------- 应用云端数据（按 updatedAt 取新后用）---------- */
+function applyRemote(remote){
+  if(!remote||!isOurState(remote)) return false;
+  var keepUser=state.currentUser, keepDay=state.dayOverride;
+  SYNC.applying=true;
+  try{
+    state=migrate(remote);
+    state.updatedAt=Number(remote.updatedAt)||0;
+    /* ★ 这几项是「本机自己的」：登录身份 / 正在填第几天，不跟着云端串。
+       本机没登录过就老老实实回登录页，别把人塞进别人的身份里。 */
+    state.currentUser=ROSTER[keepUser]?keepUser:null;
+    state.dayOverride=keepDay;
+    chalDraft={}; editTarget=null; undoStack=[];
+    save({quiet:true});
+    if(state.currentUser&&ROSTER[state.currentUser]) showMain(); else showLogin();
+    renderAll();
+    toast('已同步云端数据');
+    return true;
+  }finally{ SYNC.applying=false; }
+}
+
+/* ---------- 上传（先 GET 拿 sha / 先比 updatedAt）---------- */
+function doUpload(opt){
+  opt=opt||{};
+  if(!SYNC.token){ syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌'); if(opt.manual) toast('还没配置钥匙：设置里粘贴 GitHub 令牌'); return Promise.resolve(false); }
+  if(SYNC.pushing){ SYNC.queued=true; return Promise.resolve(false); }
+  SYNC.pushing=true;
+  syncSet('busy','同步中…（上传）');
+  return buildCloudPayload().then(function(p){
+    if(p.error){ syncSet('err',p.error); return false; }
+    if(p.oversize){
+      var m='数据过大，建议清掉头像再同步（云端文件约 '+Math.round(p.bytes/1024)+'KB）';
+      syncSet('err',m);
+      if(opt.manual) toast('数据过大，建议清掉头像再同步');
+      return false;
+    }
+    return cloudGet().then(function(res){
+      var remote=res.exists?res.json:null;
+      var rU=(remote&&Number(remote.updatedAt))||0;
+      var lU=Number(state.updatedAt)||0;
+      if(remote&&isOurState(remote)&&stateHasData(remote)&&rU>lU&&!opt.force){
+        applyRemote(remote);
+        syncSet('ok','云端数据较新，已改为拉取');
+        if(opt.manual) toast('云端数据较新，已改为拉取');
+        return false;
+      }
+      return cloudPut(p.text,res.sha,msgOf(p)).then(function(j){
+        SYNC.remoteSha=(j&&j.content&&j.content.sha)||res.sha||null;
+        SYNC.authFailed=false; SYNC.lastSync=Date.now();
+        syncSet('ok',(p.compressed&&p.compressed.length)?('已连接 · 已上传（压缩了 '+p.compressed.length+' 个头像）'):'已连接 · 已上传到云端');
+        if(opt.manual) toast('☁ 已上传到云端');
+        return true;
+      },function(e){
+        if(e&&e.status===409){                      /* 别人刚改过 → 重取 sha 再传一次 */
+          return cloudGet().then(function(res2){
+            return cloudPut(p.text,res2.sha,msgOf(p)).then(function(j){
+              SYNC.remoteSha=(j&&j.content&&j.content.sha)||res2.sha||null;
+              SYNC.authFailed=false; SYNC.lastSync=Date.now();
+              syncSet('ok','已连接 · 已上传（重试成功）');
+              if(opt.manual) toast('☁ 已上传到云端');
+              return true;
+            });
+          });
+        }
+        return Promise.reject(e);
+      });
+    });
+  }).then(function(ok){
+    SYNC.pushing=false;
+    if(SYNC.queued){ SYNC.queued=false; schedulePush(); }
+    schedulePoll();
+    return ok;
+  },function(e){
+    SYNC.pushing=false;
+    var st=e&&e.status;
+    if(st===401||st===403){ SYNC.authFailed=true; syncSet('err','钥匙无效或无权限'); }
+    else if(st===422){ syncSet('err','数据过大，建议清掉头像再同步'); }
+    else{ syncSet('err','同步失败：'+((e&&e.message)||'网络异常')); }
+    if(opt.manual) toast('上传失败：'+(st?('HTTP '+st):'网络异常'));
+    schedulePoll();
+    return false;
+  });
+}
+function msgOf(p){ return 'jianfei sync '+(p&&p.compressed&&p.compressed.length?'(compressed avatars) ':'')+new Date().toLocaleString(); }
+
+/* ---------- 拉取（云端更新才覆盖本地）---------- */
+function doPull(opt){
+  opt=opt||{};
+  /* ★ 2026-10-19 修复：读云端不需要令牌（公开仓库 GET 免鉴权）。
+     旧代码在这里无令牌直接 return，导致新设备永远是空白、分数显示 0。 */
+  if(SYNC.pulling||SYNC.pushing) return Promise.resolve(false);
+  SYNC.pulling=true;
+  syncSet('busy','同步中…（拉取）');
+  return cloudGet().then(function(res){
+    if(!res.exists){                               /* 云端为空 → 把本地的传上去（本地没内容就不动） */
+      if(stateHasData(state)){ SYNC.pulling=false; return doUpload({force:true}); }
+      SYNC.lastSync=Date.now(); syncSet('ok','已连接 · 云端暂无数据');
+      if(opt.manual) toast('云端暂无数据');
+      return false;
+    }
+    var remote=res.json;
+    if(!isOurState(remote)){ syncSet('err','云端数据格式异常（已忽略）'); if(opt.manual) toast('云端数据格式异常，已忽略'); return false; }
+    SYNC.remoteSha=res.sha;
+    var rU=Number(remote.updatedAt)||0, lU=Number(state.updatedAt)||0;
+    var ld=stateHasData(state), rd=stateHasData(remote);
+    if(rd&&(!ld||rU>lU)){                           /* 云端更新（或本地还是空的）→ 覆盖本地 */
+      applyRemote(remote);
+      SYNC.authFailed=false; SYNC.lastSync=Date.now();
+      syncSet('ok','已连接 · 已同步云端数据');
+      return true;
+    }
+    SYNC.authFailed=false; SYNC.lastSync=Date.now();
+    if(ld&&lU>rU){
+      syncSet('ok','已连接 · 本机较新，稍后自动上传'); schedulePush();
+      if(opt.manual) toast('本机数据较新，未覆盖（已安排上传）');
+      return false;
+    }
+    syncSet('ok','已连接 · 已是最新');
+    if(opt.manual) toast('☁ 已是最新，无需更新');
+    return false;
+  },function(e){
+    var st=e&&e.status;
+    if(st===401||st===403){ SYNC.authFailed=true; syncSet('err','钥匙无效或无权限'); }
+    else syncSet('err','同步失败：'+((e&&e.message)||'网络异常'));
+    if(opt.manual) toast('拉取失败：'+(st?('HTTP '+st):'网络异常'));
+    return false;
+  }).then(function(r){
+    SYNC.pulling=false;
+    schedulePoll();
+    return r;
+  });
+}
+
+/* ---------- 轻量探测：ETag 条件请求（304 = 0 字节）----------
+   第一次 GET 记下响应头 ETag；以后每次带 If-None-Match: <ETag>。
+     · 304 → changed:false        （云端没变：不下载、不解析、不渲染、不动状态行）
+     · 200 → changed:true + 正文  （云端真的变了，交给 probePull 走「取新」逻辑）
+     · 浏览器读不到 ETag 头（老浏览器 / 跨域未暴露）→ etag 兜底用响应体里的 blob sha；
+       连 sha 也拿不到 → etag 一直为空、不带条件头 → 自动退化成「直接 GET 全文」，不报错。 */
+function probeRemote(){
+  if(SYNC.probing) return Promise.resolve({changed:false,skipped:true});
+  SYNC.probing=true;
+  var h=ghHeaders(true);
+  if(SYNC.etag) h['If-None-Match']=SYNC.etag;      /* 有 ETag 才带条件头 */
+  return fetch(SYNC.API,{method:'GET',headers:h,cache:'no-store'}).then(function(r){
+    /* 200 / 304 两种响应 GitHub 都会回 ETag 头，都刷新本机 etag */
+    var et=null; try{ et=r.headers.get('ETag'); }catch(e){ et=null; }
+    if(et) SYNC.etag=et;
+    if(r.status===304) return {changed:false,notModified:true};
+    if(r.status===404) return {changed:true,exists:false,sha:null,json:null};
+    if(!r.ok) return httpErr(r);
+    return r.json().then(function(j){
+      if(!et){                                     /* 头读不到 → 用 blob sha 兜底（与 ETag 等价） */
+        var _blob=(j&&j.sha)||null;
+        if(_blob) SYNC.etag='"'+_blob+'"';
+      }
+      var txt='';
+      try{ txt=b64Decode(j&&j.content); }catch(e){ txt=''; }
+      var parsed=null;
+      try{ parsed=JSON.parse(txt); }catch(e){ parsed=null; }
+      return {changed:true,exists:true,sha:(j&&j.sha)||null,json:parsed};
+    });
+  }).then(function(res){ SYNC.probing=false; return res; },
+          function(e){ SYNC.probing=false; throw e; });
+}
+
+/* ---------- 轮询专用拉取：先探测，未变化就静默跳过 ---------- */
+function probePull(opt){
+  opt=opt||{};
+  if(!SYNC.token){ return Promise.resolve(false); }
+  if(SYNC.pulling||SYNC.pushing||SYNC.probing) return Promise.resolve(false);
+  return probeRemote().then(function(res){
+    if(!res||res.notModified||!res.changed) return false;   /* ★ 304：静默跳过（不渲染/不改状态行） */
+    if(!res.exists){                                        /* 云端为空 → 本地有数据就传上去 */
+      if(stateHasData(state)) return doUpload({force:true});
+      SYNC.lastSync=Date.now(); syncSet('ok','已连接 · 云端暂无数据');
+      return false;
+    }
+    var remote=res.json;
+    if(!isOurState(remote)){ syncSet('err','云端数据格式异常（已忽略）'); return false; }
+    SYNC.remoteSha=res.sha;
+    var rU=Number(remote.updatedAt)||0, lU=Number(state.updatedAt)||0;
+    var ld=stateHasData(state), rd=stateHasData(remote);
+    SYNC.authFailed=false;
+    if(ld&&lU>rU){                                          /* 本机较新 → 不覆盖，安排上传 */
+      SYNC.lastSync=Date.now();
+      syncSet('ok','已连接 · 本机较新，稍后自动上传'); schedulePush();
+      return false;
+    }
+    if(rd&&(!ld||rU>lU)){                                   /* 云端较新（或本地还空）→ 覆盖本地 */
+      applyRemote(remote);
+      SYNC.lastSync=Date.now();
+      syncSet('ok','已连接 · 已同步云端数据');
+      return true;
+    }
+    SYNC.lastSync=Date.now();
+    syncSet('ok','已连接 · 已是最新');
+    return false;
+  },function(e){
+    var st=e&&e.status;
+    if(st===401||st===403){ SYNC.authFailed=true; syncSet('err','钥匙无效或无权限'); }
+    else syncSet('err','同步失败：'+((e&&e.message)||'网络异常'));
+    return false;
+  });
+}
+
+/* ---------- 定时器 ---------- */
+function schedulePush(){
+  if(SYNC.applying) return;
+  if(!SYNC.token){ syncRenderStatus(); return; }
+  clearTimeout(SYNC.pushTimer);
+  SYNC.pushTimer=setTimeout(function(){ doUpload({}); },SYNC.DEBOUNCE_MS);
+}
+function schedulePoll(){
+  clearTimeout(SYNC.pollTimer);
+  var delay=SYNC.authFailed?SYNC.BACKOFF_MS:SYNC.POLL_MS;
+  SYNC.pollTimer=setTimeout(function(){
+    if(SYNC.token&&document.visibilityState==='visible') probePull({});   /* ★ 条件探测 */
+    schedulePoll();
+  },delay);
+}
+
+/* ---------- 设置面板里的按键 ---------- */
+function bindSyncUI(){
+  var ti=document.getElementById('setToken');
+  var b1=document.getElementById('btnTokenSave');
+  var b2=document.getElementById('btnTokenClear');
+  var b3=document.getElementById('btnSyncPush');
+  var b4=document.getElementById('btnSyncPull');
+  if(b1) b1.onclick=function(){
+    var v=((ti&&ti.value)||'').trim();
+    if(v.length<20||/\s/.test(v)){ toast('这不像 GitHub 令牌（太短或含空格）'); return; }
+    syncSetToken(v);
+    if(ti) ti.value='';
+    toast('钥匙已保存到本机');
+    schedulePoll();
+    doPull({});
+  };
+  if(b2) b2.onclick=function(){ syncClearToken(); toast('已清除本机钥匙'); };
+  if(b3) b3.onclick=function(){ clearTimeout(SYNC.pushTimer); doUpload({manual:true}); };
+  if(b4) b4.onclick=function(){ clearTimeout(SYNC.pushTimer); doPull({manual:true}); };
+}
+
+/* ---------- 启动 ---------- */
+function syncInit(){
+  var ok=false;
+  try{ ok=!!(window.fetch&&window.Promise&&window.localStorage); }catch(e){ ok=false; }
+  if(!ok){ syncSet('err','此浏览器不支持云同步（用新版 Chrome/Edge/Safari 即可）'); return; }
+  syncLoadToken();
+  bindSyncUI();
+  if(!SYNC.token){
+    syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
+    syncRenderStatus();                        /* 不报错、不联网：其余功能照常离线用 */
+  }else{
+    syncSet('ok','已连接');
+    schedulePoll();
+    setTimeout(function(){ probePull({}); },600);
+  }
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'){
+      if(SYNC.token) probePull({});             /* 页面重新可见 → 立刻探测一次 */
+      schedulePoll();
+    }
+  });
+  window.addEventListener('online',function(){ if(SYNC.token){ SYNC.authFailed=false; probePull({}); } });
+}
+
+/* =========================================================
    13. 启动
    ========================================================= */
 function boot(){
   bind();
+  syncInit();                     /* ☁ 云同步：读本机钥匙、起轮询 */
   if(state.currentUser&&ROSTER[state.currentUser]){ showMain(); }
   else{ showLogin(); }
 }
@@ -1339,6 +1933,16 @@ window.APP={
   logout:logout,
   _day:function(){ return currentDay(); },
   _setDay:function(n){ state.dayOverride=n; save(); renderAll(); },
+  /* ★ 时间锁自测接口（仅控制台可用，不写进界面） */
+  dev:function(){ return DEV_MODE; },
+  _now:function(iso){ nowOverride=(iso===null||iso===undefined)?null:new Date(String(iso)).getTime(); renderAll(); return nowOverride; },
+  _clearNow:function(){ nowOverride=null; renderAll(); return null; },
+  _phase:function(){ return segPhase(); },
+  _window:function(){
+    return {phase:segPhase(),rawDay:rawDay(),dev:DEV_MODE,scoringOpen:scoringOpen(),settleOpen:settleOpen(),
+            segStart:state.segStart,segStartMs:segStartMs(),segEndMs:segEndMs(),
+            hint:(function(){ try{ return windowHint(); }catch(e){ return ''; } })()};
+  },
   _crowns:function(map){
     if(!state.crownBase){ state.crownBase={}; ORDER.forEach(function(id){ state.crownBase[id]=state.players[id].crowns; }); }
     ORDER.forEach(function(id){ if(map[id]!==undefined){ var v=Math.max(0,Math.min(CROWN_MAX,map[id])); state.players[id].crowns=v; state.crownBase[id]=v; } });
@@ -1360,7 +1964,7 @@ window.APP={
     state.players[id].challenge={text:text||'',done:!!done,saved:!!text,revisions:0};
     save(); renderAll();
   },
-  _add:function(kind){ if(kind==='weigh') addWeigh(); else addMeal(); },
+  _add:function(kind){ if(kind==='weigh') addWeigh(); else if(kind==='exercise') addExercise(); else addMeal(); },
   _clear:function(){ clearDay(); },
   _openSettle:function(){ openSettle(); },
   _page:function(n){ cardPage=n; renderCard(); },
@@ -1373,6 +1977,27 @@ window.APP={
     return {key:key,count:a.length,items:a};
   },
   _buildTribute:buildTribute,
+  /** ☁ 云同步自测接口 */
+  sync:{
+    info:function(){ return {token:!!SYNC.token,kind:SYNC.kind,msg:SYNC.msg,lastSync:SYNC.lastSync,authFailed:SYNC.authFailed,remoteSha:SYNC.remoteSha}; },
+    setToken:function(t){ var r=syncSetToken(t); if(r){ schedulePoll(); doPull({}); } return r; },
+    clearToken:function(){ syncClearToken(); },
+    push:function(o){ return doUpload(o||{manual:true}); },
+    pull:function(o){ return doPull(o||{manual:true}); },
+    cloudGet:cloudGet,
+    /** ★ 自测用：手动跑一次条件探测（返回 {changed,notModified,exists,sha}） */
+    probe:function(){ return probeRemote(); },
+    /** ★ 自测用：跑一次轮询版拉取 */
+    probePull:function(o){ return probePull(o||{}); },
+    etag:function(){ return SYNC.etag; },
+    _setEtag:function(v){ SYNC.etag=(v===undefined||v===null)?null:String(v); return SYNC.etag; },
+    _setApi:function(u){ SYNC.API=String(u); return SYNC.API; },
+    payload:function(){ return buildCloudPayload(); },
+    hasData:function(s){ return stateHasData(s===undefined?state:s); },
+    /** 自测用：手动改本机 updatedAt（0=本机从来没改过） */
+    setUpdatedAt:function(t){ state.updatedAt=Number(t)||0; lastSig=''; save({quiet:true}); return state.updatedAt; },
+    _status:function(){ return SYNC; }
+  },
   /** 自测辅助：直接以文本导入（走与文件导入相同的校验逻辑） */
   _importText:function(txt){
     var parsed;
@@ -1395,8 +2020,10 @@ window.APP={
       for(var d=1;d<=SEGMENT_DAYS&&t>0;d++){
         var take=Math.min(DAY_CAP,t);
         var meals=Math.min(MAX_MEALS,take);
-        var weigh=take-meals;
-        state.players[id].days[d]={meals:meals,weigh:weigh};
+        var rest=take-meals;
+        var weigh=Math.min(MAX_WEIGH,rest);
+        var exercise=Math.min(MAX_EXERCISE,rest-weigh);
+        state.players[id].days[d]={meals:meals,weigh:weigh,exercise:exercise};
         t-=take;
       }
       if(t>0){ state.players[id].challenge={text:'测试',done:true,saved:true,revisions:0}; }
