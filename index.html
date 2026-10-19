@@ -1621,7 +1621,7 @@ function buildCloudPayload(){
   return chain.then(function(){
     var text=JSON.stringify(snap);
     var bytes=utf8Bytes(text);
-    return {text:text,bytes:bytes,oversize:bytes>SYNC.CLOUD_LIMIT,compressed:jobs};
+    return {snap:snap,text:text,bytes:bytes,oversize:bytes>SYNC.CLOUD_LIMIT,compressed:jobs};
   });
 }
 
@@ -1690,7 +1690,24 @@ function doUpload(opt){
         if(opt.manual) toast('云端数据较新，已改为拉取');
         return false;
       }
-      return cloudPut(p.text,res.sha,msgOf(p)).then(function(j){
+      /* ★★ 2026-10-19 关键修复：只上传「自己那一份」，别人的数据原样保留云端版本。
+         事故原因：芋头设备里只有自己的数据，一上传就把整份 cloud.json 覆盖 → 别人全归零。
+         例外：DEV_MODE（?dev=1 后门）下允许全量上传，方便主持人代填/修数据。 */
+      var putText=p.text;
+      if(remote&&isOurState(remote)&&remote.players&&p.snap&&p.snap.players&&!DEV_MODE){
+        var _me=state.currentUser;
+        if(_me&&ROSTER[_me]){
+          var _m=JSON.parse(JSON.stringify(p.snap));
+          _m.updatedAt=p.snap.updatedAt;
+          var _kept=[];
+          ORDER.forEach(function(_id){
+            if(_id!==_me&&remote.players[_id]){ _m.players[_id]=remote.players[_id]; _kept.push(_id); }
+          });
+          putText=JSON.stringify(_m);
+          try{ console.log('[同步] 仅上传 '+ROSTER[_me].name+' 的数据；保留云端 '+_kept.join('/')); }catch(e){}
+        }
+      }
+      return cloudPut(putText,res.sha,msgOf(p)).then(function(j){
         SYNC.remoteSha=(j&&j.content&&j.content.sha)||res.sha||null;
         SYNC.authFailed=false; SYNC.lastSync=Date.now();
         syncSet('ok',(p.compressed&&p.compressed.length)?('已连接 · 已上传（压缩了 '+p.compressed.length+' 个头像）'):'已连接 · 已上传到云端');
@@ -1699,7 +1716,7 @@ function doUpload(opt){
       },function(e){
         if(e&&e.status===409){                      /* 别人刚改过 → 重取 sha 再传一次 */
           return cloudGet().then(function(res2){
-            return cloudPut(p.text,res2.sha,msgOf(p)).then(function(j){
+            return cloudPut(putText,res2.sha,msgOf(p)).then(function(j){
               SYNC.remoteSha=(j&&j.content&&j.content.sha)||res2.sha||null;
               SYNC.authFailed=false; SYNC.lastSync=Date.now();
               syncSet('ok','已连接 · 已上传（重试成功）');
@@ -1813,7 +1830,7 @@ function probeRemote(){
 /* ---------- 轮询专用拉取：先探测，未变化就静默跳过 ---------- */
 function probePull(opt){
   opt=opt||{};
-  if(!SYNC.token){ return Promise.resolve(false); }
+  /* ★ 2026-10-19：探测云端不需要令牌（只读） */
   if(SYNC.pulling||SYNC.pushing||SYNC.probing) return Promise.resolve(false);
   return probeRemote().then(function(res){
     if(!res||res.notModified||!res.changed) return false;   /* ★ 304：静默跳过（不渲染/不改状态行） */
@@ -1861,7 +1878,7 @@ function schedulePoll(){
   clearTimeout(SYNC.pollTimer);
   var delay=SYNC.authFailed?SYNC.BACKOFF_MS:SYNC.POLL_MS;
   SYNC.pollTimer=setTimeout(function(){
-    if(SYNC.token&&document.visibilityState==='visible') probePull({});   /* ★ 条件探测 */
+    if(document.visibilityState==='visible') probePull({});   /* ★ 2026-10-19：无令牌也探测（只读） */
     schedulePoll();
   },delay);
 }
@@ -1894,21 +1911,22 @@ function syncInit(){
   if(!ok){ syncSet('err','此浏览器不支持云同步（用新版 Chrome/Edge/Safari 即可）'); return; }
   syncLoadToken();
   bindSyncUI();
+  /* ★ 2026-10-19：无令牌也联网「读」（公开仓库 GET 免鉴权）。
+     没令牌 = 只读模式：能看到所有人的云端分数，但改不了（要存需粘钥匙）。 */
   if(!SYNC.token){
-    syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
-    syncRenderStatus();                        /* 不报错、不联网：其余功能照常离线用 */
+    syncSet('ok','只读模式：能看到云端分数；要补分需在设置里粘贴钥匙');
   }else{
     syncSet('ok','已连接');
-    schedulePoll();
-    setTimeout(function(){ probePull({}); },600);
   }
+  schedulePoll();
+  setTimeout(function(){ probePull({}); },400);
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'){
-      if(SYNC.token) probePull({});             /* 页面重新可见 → 立刻探测一次 */
+      probePull({});                            /* 页面重新可见 → 立刻探测一次（无令牌也可） */
       schedulePoll();
     }
   });
-  window.addEventListener('online',function(){ if(SYNC.token){ SYNC.authFailed=false; probePull({}); } });
+  window.addEventListener('online',function(){ SYNC.authFailed=false; probePull({}); });
 }
 
 /* =========================================================
