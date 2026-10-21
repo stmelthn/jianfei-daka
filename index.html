@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<meta name="theme-color" content="#0b5d3b"/>
+<meta name="theme-color" content="#0b6d9e"/>
 <title>减肥群 · 计分</title>
 <style>
 :root{
   --gold:#f5c542; --gold-d:#a8720a; --ink:#1c2329; --sub:#6b7a86;
-  --felt:#0b5d3b; --line:#e4e8ec;
+  --felt:#0b6d9e; --line:#dce9f2;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   color:var(--ink);
-  background:radial-gradient(circle at 50% -10%,#137a51 0%,#0b5d3b 45%,#05291c 100%);
+  background:radial-gradient(circle at 50% -10%,#1a95d4 0%,#0b6d9e 45%,#04283d 100%);
   background-attachment:fixed;
   min-height:100vh;
 }
@@ -72,22 +72,26 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
 /* ---------- 排行榜 ---------- */
 .board{background:rgba(255,255,255,.97);border-radius:15px;margin:0 auto;padding:9px 11px 11px;box-shadow:0 6px 18px rgba(0,0,0,.25);}
-.board h3{margin:2px 0 7px;font-size:14.5px;text-align:center;color:#0b5d3b;letter-spacing:2px;font-weight:900;}
+.board h3{margin:2px 0 7px;font-size:14.5px;text-align:center;color:#0b6d9e;letter-spacing:2px;font-weight:900;}
 .blist{list-style:none;margin:0;padding:0;}
 .blist li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;margin-bottom:4px;}
 .blist li .rk{width:20px;text-align:center;font-weight:900;color:#8b98a3;font-size:14px;flex:0 0 auto;}
+.blist li .avwrap{position:relative;display:inline-flex;align-items:center;flex:0 0 auto;}
+.s1crown{position:absolute;top:-9px;right:-7px;font-size:15px;line-height:1;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));pointer-events:none;}
+.s1crown.small{font-size:12px;top:-7px;right:-5px;opacity:.92;}
 .blist li .av{width:32px;height:32px;border-radius:50%;background:#fff;color:#111;border:2px solid #e0b64a;
   display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto;overflow:hidden;}
 .blist li .av img{width:100%;height:100%;object-fit:cover;}
 .blist li .nmc{flex:1;min-width:0;display:flex;flex-direction:column;}
 .blist li .nm{font-weight:800;font-size:15px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .blist li .ttag{font-size:10.5px;font-weight:800;color:#a8720a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.blist li .pt{font-weight:900;font-size:18px;color:#0b5d3b;}
+.blist li .pt{font-weight:900;font-size:18px;color:#0b6d9e;}
 .blist li.me{background:linear-gradient(90deg,#fff2c9,#ffe9a3);box-shadow:inset 0 0 0 2px var(--gold);}
 .blist li.me .rk{color:#a8720a;}
 
 /* 排行榜内的挑战墙 */
-.cbh{margin:8px 0 5px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;font-weight:900;color:#0b5d3b;letter-spacing:1.5px;}
+.cbh{margin:8px 0 5px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;font-weight:900;color:#0b6d9e;letter-spacing:1.5px;}
 .cblist{list-style:none;margin:0;padding:0;}
 .cblist li{display:flex;align-items:baseline;gap:5px;padding:5px 6px;border-radius:9px;font-size:13px;}
 .cblist li:nth-child(odd){background:#f7fafc;}
@@ -99,7 +103,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
 /* ---------- 本期挑战 ---------- */
 .chalpanel{background:#fff;border-radius:15px;padding:10px 11px;margin-top:9px;box-shadow:0 6px 18px rgba(0,0,0,.25);}
-.chalpanel h3{margin:0 0 6px;font-size:14.5px;font-weight:900;color:#0b5d3b;letter-spacing:1px;}
+.chalpanel h3{margin:0 0 6px;font-size:14.5px;font-weight:900;color:#0b6d9e;letter-spacing:1px;}
 .chalpanel h3 .admin{font-size:11px;color:#b07a00;font-weight:800;letter-spacing:0;}
 .chalrow{display:flex;align-items:center;gap:8px;padding:4px 0;}
 .chalrow .av{width:34px;height:34px;border-radius:50%;background:#fff;color:#111;border:2px solid var(--gold);
@@ -118,7 +122,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .chalbar .btn-primary{padding:10px;font-size:16px;letter-spacing:3px;}
 .lockhint2{text-align:center;font-size:11.5px;font-weight:800;color:#b07a00;}
 .note{margin-top:8px;padding:8px 9px;border-radius:9px;background:#f2f8f4;color:#28543c;font-size:12px;line-height:1.55;font-weight:700;}
-.note b{color:#0b5d3b;}
+.note b{color:#0b6d9e;}
 
 /* ---------- 计分器 ---------- */
 .counter{background:#fff;border-radius:15px;padding:10px 11px;margin-top:9px;box-shadow:0 6px 18px rgba(0,0,0,.25);}
@@ -133,7 +137,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .daypick{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);font-weight:700;}
 .daypick select{padding:5px 7px;border-radius:8px;border:2px solid var(--line);font-size:13.5px;font-weight:700;background:#fff;}
 .stat{margin:8px 0 3px;padding:8px 9px;border-radius:11px;background:#f5f8fa;font-size:13.5px;line-height:1.6;color:#26323a;}
-.stat b{font-size:19px;color:#0b5d3b;}
+.stat b{font-size:19px;color:#0b6d9e;}
 .stat .cap{color:#b07a00;font-size:11.5px;font-weight:700;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
 .btn-primary.save{margin-top:9px;font-size:20px;}
@@ -184,7 +188,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .privi{margin-top:8px;padding:9px 10px;border-radius:11px;background:#eef7f1;color:#0d5c30;font-size:12.5px;font-weight:700;line-height:1.55;}
 .recgrid{margin:6px 0 0;}
 .recgrid .r{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px dashed var(--line);font-size:14.5px;font-weight:700;}
-.recgrid .r span:last-child{font-weight:900;color:#0b5d3b;}
+.recgrid .r span:last-child{font-weight:900;color:#0b6d9e;}
 .quote{margin:12px 0 3px;padding:12px;border-radius:13px;background:linear-gradient(180deg,#fffdf3,#fff2cf);text-align:center;font-size:18px;font-weight:900;color:#8a2010;}
 .killbox{margin:6px 0 9px;padding:9px 11px;border-radius:13px;background:linear-gradient(180deg,#2a2f36,#15191d);color:#fff;box-shadow:inset 0 0 0 2px #b8860b;}
 .killbox .krow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.18);font-size:13.5px;}
@@ -232,7 +236,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
 <!-- ============ 登录页（只有名牌，点一下就进）============ -->
 <div id="loginScreen" class="screen">
-  <div class="lseason">【s1-黎明之始】健康饮食打卡</div>
+  <div class="lseason">【s2-大水赛季】健康饮水打卡</div>
   <div class="lsub">点一下自己的名牌，直接进</div>
   <div class="login-box">
     <div class="quick-grid" id="quickGrid"></div>
@@ -244,8 +248,8 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
   <div class="wrap">
     <header class="topbar">
       <div class="topseason">
-        <div class="s1">【s1-黎明之始】健康饮食打卡</div>
-        <div class="s2" id="segLine">第3赛段</div>
+        <div class="s1">【s2-大水赛季】健康饮水打卡</div>
+        <div class="s2" id="segLine">第1赛段 · 10月23日开赛</div>
       </div>
       <button class="gearbtn" id="btnGear" title="设置">⚙</button>
     </header>
@@ -256,7 +260,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     </div>
 
     <div class="board">
-      <h3>本赛段排行榜</h3>
+      <h3>本赛段排行榜 <span style="font-size:10.5px;font-weight:700;color:#5b7f96;letter-spacing:0;">· 3人赛制（芋头可玩不排名）</span></h3>
       <ul class="blist" id="boardList"></ul>
       <div class="cbh">本期挑战</div>
       <ul class="cblist" id="boardChal"></ul>
@@ -280,14 +284,14 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
       <div class="stat" id="counterStat"></div>
 
       <div class="grid2">
-        <button class="btn-ghost btn-plus" id="btnMeal">＋ 健康餐</button>
-        <button class="btn-ghost btn-plus" id="btnWeigh">＋ 上称</button>
-        <button class="btn-ghost btn-plus" id="btnExercise">＋ 运动</button>
+        <button class="btn-ghost btn-plus" id="btnMeal">＋ 喝够1.5L水</button>
+        <button class="btn-ghost btn-plus" id="btnWeigh">＋ 没喝含糖饮料</button>
+        <button class="btn-ghost btn-plus" id="btnExercise">＋ 50%喝热水</button>
         <button class="btn-ghost btn-minus" id="btnUndo">－ 撤销</button>
         <button class="btn-ghost" id="btnClear" style="grid-column:1/-1;">清空本日</button>
       </div>
 
-      <div class="note">计分说明：日常分（每天上限 <b>5</b> 分＝健康餐 <b>3</b> 顿封顶 ＋ 上称 1 次 ＋ 运动 1 次，健康餐满 3 顿、运动满 1 次后按钮锁住，上称可多记但只计 1 分）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分</div>
+      <div class="note">计分说明：日常分（每天上限 <b>3</b> 分＝<b>喝够1.5L水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>饮水50%以上为热水 +1</b>，每项每天各计 1 次）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S2「大水赛季」。</div>
 
       <button class="btn-primary save" id="btnSave">保 存</button>
       <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
@@ -393,13 +397,27 @@ var ROSTER={
   lmh:{char:'瓜',name:'西瓜'}
 };
 var ORDER=['hyt','gd','clm','lmh'];
-var SEASON='s1-黎明之始';
-var SEG_NO=3;                                  /* ←★ 赛段号写死在这里 */
-var INIT_CROWNS={hyt:0, gd:1, clm:2, lmh:1};   /* 蛋蛋2👑 栋栋1👑 西瓜1👑 芋头0👑 */
+var SEASON='s2-大水赛季';
+var SEG_NO=1;                                  /* ←★ S2 第 1 赛段 */
+var INIT_CROWNS={hyt:0, gd:0, clm:0, lmh:0};   /* ★ S2 全部清零：谁本赛段赢谁得一个小王冠 */
 var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
-var MAX_MEALS=3, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=5, CHALLENGE_PTS=20;
-var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 前二名各得 6r */
-var KING_FEE=10, DUKE_FEE=5;   /* 赛季敬献：河贼王 10r/人，河贼公 5r/人 */
+/* ★★ S2 新计分：每日 3 分（原 5 分制取消）
+   字段名沿用 meals/weigh/exercise，仅改语义，保证云端数据与旧代码兼容：
+     meals    → 喝够 1.5L 水      +1
+     weigh    → 不喝含糖饮料       +1
+     exercise → 饮水 50% 以上为热水 +1 */
+var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=3, CHALLENGE_PTS=20;
+/* ★★ S2 参赛者：3 人。芋头(hyt) 可玩可打卡，但不进排名、不参与结算 */
+var PARTICIPANTS=['gd','clm','lmh'];
+/* ★★ S1 荣誉存档（只在头像上展示，不参与 S2 计分）
+   S1 结算：蛋蛋(clm)=河贼王 2冠、栋栋(gd)=河贼公 1冠、西瓜(lmh)=1冠、芋头(hyt)=0冠 */
+var S1_HONORS={clm:{level:'king',crowns:2}, gd:{level:'duke',crowns:1},
+               lmh:{level:'duke',crowns:1}, hyt:{level:null,crowns:0}};
+/* ★★ S2 初始化标记：用于判断「是否需要彻底重置」。
+   修改这个值 = 强制所有客户端重置（赛季切换时改一次即可） */
+var SEASON_INIT_TAG='s2-大水赛季_seg1_20261023';
+var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 第一名收 12r */
+var KING_FEE=0, DUKE_FEE=0;    /* ★ S2 取消赛季敬献（无 5r/10r） */
 var STORE_KEY='jianfei_score_v2';
 /* ★ 本期刺客写死为芋头（hyt）：设置面板不再开放修改，下一期再补充刺客计算规则 */
 var ASSASSIN_ID='hyt';
@@ -410,7 +428,7 @@ var ASSASSIN_ID='hyt';
 var DEV_MODE=false;
 try{ if(/[?&]dev=1(?:&|$)/.test(String(location.search||''))) DEV_MODE=true; }catch(e){}
 /* ★ 赛段起始日：计分窗口 = 起始日 00:00 起，共 7 天（第 7 日 24:00 止） */
-var SEG_START_DEF='2026-10-12';
+var SEG_START_DEF='2026-10-23';
 var SEGMENT_DAYS=7;
 /* ★ 2026-10-19 新增：赛后补录期。
    赛段正常结束后，再宽限 BACKFILL_GRACE_DAYS 天，此期间仍可补录第 1..7 天的分（不得录未来）。
@@ -456,6 +474,34 @@ function migrate(s){
   base.season=SEASON;                 /* ★ 赛季以代码常量为准（改了 SEASON 即切换，变更前的已自动备份） */
   base.segment=SEG_NO;
   base.updatedAt=Number(s.updatedAt)||0;      /* ★ 云端同步用：沿用原值，别在迁移时刷新 */
+
+  /* ★★ S2 首次初始化：旧数据（S1）整体作废，只保留头像与本机身份
+     —— 王冠清零、结算状态重置、赛段起始日改为 10-23、每日打卡清空 */
+  var initTag=null;
+  try{ initTag=localStorage.getItem(STORE_KEY+'_inittag'); }catch(e){}
+  if(initTag!==SEASON_INIT_TAG){
+    var avatars={},who=s.currentUser||null;
+    try{
+      ORDER.forEach(function(id){
+        if(s.players&&s.players[id]&&s.players[id].avatar) avatars[id]=s.players[id].avatar;
+      });
+    }catch(e){}
+    base.segStart=SEG_START_DEF;      /* ★ 强制新赛段起始日 */
+    base.settled=false;               /* ★ 重置结算状态 */
+    base.crownBase=null;
+    base.lastTop2=null;
+    base.segTitle={king:null,duke:null};
+    base.currentUser=who;
+    ORDER.forEach(function(id){
+      base.players[id].days={};       /* 清空每日打卡 */
+      base.players[id].crowns=0;      /* 王冠清零 */
+      base.players[id].knives=0;
+      if(avatars[id]) base.players[id].avatar=avatars[id];
+    });
+    base._s2Reset=true;
+    return base;
+  }
+
   base.segStart=s.segStart||SEG_START_DEF;
   base.currentUser=s.currentUser||null;
   base.dayOverride=(s.dayOverride===undefined)?null:s.dayOverride;
@@ -530,6 +576,13 @@ function backupNow(){
   }catch(e){ return null; }
 }
 /* 启动时检查：SEASON / SEG_NO 变化了（改代码或新开赛季）→ 把【变更前】的原始数据自动备份一份 */
+/* ★ 记录 S2 初始化标记（配合 migrate 使用） */
+function markSeasonInit(){
+  try{
+    var k=STORE_KEY+'_inittag';
+    if(localStorage.getItem(k)!==SEASON_INIT_TAG) localStorage.setItem(k,SEASON_INIT_TAG);
+  }catch(e){}
+}
 function checkRollover(){
   try{
     var tag=SEASON+'_'+SEG_NO;
@@ -552,7 +605,11 @@ function checkRollover(){
 function load(){
   try{
     var raw=localStorage.getItem(STORE_KEY);
-    if(!raw) return freshState();
+    if(!raw){
+      /* ★ 首次打开（无任何本地数据）：直接给全新 S2 状态，并记录初始化标记 */
+      try{ localStorage.setItem(STORE_KEY+'_inittag',SEASON_INIT_TAG); }catch(e){}
+      return freshState();
+    }
     return migrate(JSON.parse(raw));
   }catch(e){ return freshState(); }
 }
@@ -583,6 +640,16 @@ function save(opt){
 }
 checkRollover();   /* ★ 先做变更检测，再读状态 */
 var state=load();
+/* ★★ S2 首次初始化：migrate 已把旧数据重置，这里落盘 + 写标记，避免每次刷新都重置 */
+if(state._s2Reset){
+  delete state._s2Reset;
+  markSeasonInit();
+  try{
+    state.settled=false;
+    localStorage.setItem(STORE_KEY,JSON.stringify(state));
+  }catch(e){}
+  console.log('[S2] 大水赛季初始化完成：王冠清零、结算重置、起始日 '+state.segStart);
+}
 /* ★ v4（3.3）：dayOverride 不跨会话持久化 —— 每次打开页面一律回到「今天」。
    只在本次会话内存里有效；要补录就往下拉框主动选一天。防"选过第3天之后每次打开都误录"。 */
 state.dayOverride=null;
@@ -666,9 +733,10 @@ function getDay(id,d){
 function dayScore(id,d){
   var dt=state.players[id].days[d];
   if(!dt) return 0;
-  var m=Math.min(dt.meals||0,MAX_MEALS);
-  var w=Math.min(dt.weigh||0,MAX_WEIGH);
-  var e=Math.min(dt.exercise||0,MAX_EXERCISE);   /* ★ 运动每天只计 1 分 */
+  /* ★ S2 大水赛季：喝水1.5L / 不含糖饮料 / 50%热水，各 1 分，每日上限 3 分 */
+  var m=Math.min(dt.meals||0,MAX_MEALS);      /* 喝够 1.5L 水 */
+  var w=Math.min(dt.weigh||0,MAX_WEIGH);      /* 不喝含糖饮料 */
+  var e=Math.min(dt.exercise||0,MAX_EXERCISE);/* 饮水 50% 以上为热水 */
   return m+w+e;
 }
 function challengePts(id){
@@ -682,10 +750,12 @@ function dailyScore(id){
 }
 function totalScore(id){ return dailyScore(id)+challengePts(id); }
 function ranking(){
-  var r=ORDER.map(function(id){ return {id:id,score:totalScore(id)}; });
-  r.sort(function(a,b){ return (b.score-a.score)||(ORDER.indexOf(a.id)-ORDER.indexOf(b.id)); });
+  /* ★ S2：只排参赛者（芋头可玩但不进排名） */
+  var r=PARTICIPANTS.map(function(id){ return {id:id,score:totalScore(id)}; });
+  r.sort(function(a,b){ return (b.score-a.score)||(PARTICIPANTS.indexOf(a.id)-PARTICIPANTS.indexOf(b.id)); });
   return r;
 }
+function isParticipant(id){ return PARTICIPANTS.indexOf(id)>=0; }
 function rankOf(id){
   var r=ranking();
   for(var i=0;i<r.length;i++) if(r[i].id===id) return i+1;
@@ -772,10 +842,16 @@ function buildTribute(ranked){
   }
   var gcnt=groups.length;
   var out=[];
-  function T(from,to,amt){ if(amt>0) out.push({from:from,to:to,amt:amt}); }
+  function T(from,to,amt){
+    if(amt>0 && from && to && from!==to) out.push({from:from,to:to,amt:amt});
+  }
   function allDistinct(){ for(var k=0;k<groups.length;k++){ if(groups[k].length!==1) return false; } return true; }
-  /* ★交叉配对：末名(第4名)→第2名；次末(第3名)→第1名 */
-  function pairTopBottom(){ T(ids[3],ids[1],TRIBUTE); T(ids[2],ids[0],TRIBUTE); }
+  /* ★★ S2 规则：第 2..n 名各出 TRIBUTE=6r 给第 1 名（3人赛制 = 6+6 = 12r）
+     （旧版写死 ids[3]/ids[2] 是 4 人交叉配对，3 人时会拿到 undefined 而崩） */
+  function pairTopBottom(){
+    if(ids.length<2) return;
+    for(var q=1;q<ids.length;q++) T(ids[q],ids[0],TRIBUTE);
+  }
 
   if(gcnt<=1){ /* 全平 → 不进贡 */ }
   else if(gcnt===2){
@@ -794,7 +870,7 @@ function buildTribute(ranked){
     }else if(groups[0].length===1){
       for(var a=1;a<gcnt;a++) groups[a].forEach(function(p){ T(p,groups[0][0],TRIBUTE); });
     }else if(groups[gcnt-1].length===1){
-      var share2=TRIBUTE/(n-1);
+      var share2=TRIBUTE/Math.max(1,n-1);
       for(var b=0;b<gcnt-1;b++) groups[b].forEach(function(r){ T(groups[gcnt-1][0],r,share2); });
     }else{
       pairTopBottom();
@@ -808,8 +884,9 @@ function computeSettlement(){
   ORDER.forEach(function(id){ money[id]=0; details[id]=[]; });
   var holders=titleHolders();          /* 结算【后】实际称号（刚加冕者本局即收敬献） */
   var preHolders=preSettleHolders();   /* 结算【前】称号（刺杀目标取这份） */
-  var top2=[ranked[0].id,ranked[1].id];
-  var bot2=[ranked[2].id,ranked[3].id];
+  /* ★ S2：3 人赛制。第 1 名收，第 2、3 名各出 6r */
+  var top2=[ranked[0].id];
+  var bot2=ranked.slice(1).map(function(x){ return x.id; });
 
   /* ---- 刺客 / 弑君判定（★三条同时满足才算成功）----
      ① 刺客本人计分进前二
@@ -849,6 +926,7 @@ function computeSettlement(){
   var heldMap={}; activeHolders.forEach(function(h){ heldMap[h.id]=true; });
   function offering(from,to,fee){
     if(!from||!to||from===to) return;
+    if(!fee||fee<=0) return;                 /* ★ S2 无赛季敬献，直接跳过 */
     if(killSuccess&&kill&&from===kill.killer){
       details[from].push({who:to,type:'敬献（刺客免纳贡）',amt:0});
       return;
@@ -870,6 +948,12 @@ function computeSettlement(){
 /* =========================================================
    6. 鼓励语（全篇不出现负面字眼）
    ========================================================= */
+/* ★ S2 三项打卡的文案 */
+var S2_ITEMS={
+  meals:{name:'喝够1.5L水', icon:'💧', tip:'今天喝够 1500ml 水'},
+  weigh:{name:'没喝含糖饮料', icon:'🚫', tip:'今天没喝奶茶/可乐等含糖饮料'},
+  exercise:{name:'50%喝热水', icon:'♨️', tip:'今天饮水有一半以上是热水'}
+};
 var POOL={
   king:'妈的，真牛逼！',
   receiver:['吾皇万岁！','王公千岁！','王侯将相，宁有种乎'],
@@ -907,6 +991,14 @@ function crownHTML(kind){
   if(kind==='small') return '<span class="crownwrap small"><span class="crown"></span></span>';
   return '<span class="crownwrap mini"><span class="crown"></span></span>';
 }
+/* ★★ S1 荣誉王冠：只作展示，不参与 S2 计分
+   按 S1 最终冠数：2冠→大王冠（河贼王）、1冠→小王冠（河贼公）、0冠→无 */
+function s1HonorHTML(id){
+  var h=S1_HONORS[id];
+  if(!h||!h.crowns) return '';
+  if(h.crowns>=2) return '<span class="s1crown" title="S1 河贼王">👑</span>';
+  return '<span class="s1crown small" title="S1 河贼公">👑</span>';
+}
 function crownsInline(id){
   var p=state.players[id],out='';
   for(var i=0;i<p.crowns;i++) out+=crownHTML('mini');
@@ -916,6 +1008,7 @@ function crownsInline(id){
 /* 换头像按钮前面的皇冠 / 刺客小牌 */
 function myBadgeHTML(id){
   var p=state.players[id],out='';
+  out+=s1HonorHTML(id);              /* ★ S1 荣誉冠（永久展示） */
   if(p.crowns>0){
     out+='<span class="mybadge" title="累计皇冠">';
     for(var i=0;i<p.crowns;i++) out+=crownHTML('mini');
@@ -935,7 +1028,14 @@ function crownStageHTML(id,lv,knife){
 
 function renderHeader(){
   var d=todayDate();
-  $('segLine').textContent='第'+state.segment+'赛段 · '+fmtMD(d)+' · 第 '+currentDay()+'/'+SEGMENT_DAYS+' 天';
+  var _ph=segPhase();
+  if(_ph==='before'){
+    $('segLine').textContent='第'+state.segment+'赛段 · '+fmtMD(segStartDate())+' 开赛（还有 '+Math.ceil((segStartMs()-nowMs())/86400000)+' 天）';
+  }else if(_ph==='over'||_ph==='locked'){
+    $('segLine').textContent='第'+state.segment+'赛段 · 已结束 · 共 '+SEGMENT_DAYS+' 天';
+  }else{
+    $('segLine').textContent='第'+state.segment+'赛段 · '+fmtMD(d)+' · 第 '+currentDay()+'/'+SEGMENT_DAYS+' 天';
+  }
   var id=me();
   $('welLine').textContent=(id?'欢迎 '+ROSTER[id].name+' 👋':'欢迎');
 }
@@ -948,10 +1048,11 @@ function renderBoard(){
     if(r.id===me()) li.className='me';
     /* 排行榜只显示：名次 + 头像 + 昵称 + 分数（不显示刺客🔪、也不显示王/公称号）。
        刺客标记🔪只出现在本人计分器「换头像」按钮旁的徽章里（myBadgeHTML）。 */
-    li.innerHTML='<span class="rk">'+rank+'</span><span class="av">'+avatarInner(r.id)+'</span>'+
+    li.innerHTML='<span class="rk">'+rank+'</span>'+
+      '<span class="avwrap"><span class="av">'+avatarInner(r.id)+'</span>'+s1HonorHTML(r.id)+'</span>'+
       '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
       '<span class="pt">'+r.score+'</span>';
-    li.title=ROSTER[r.id].name+'：日常分（三餐＋上称＋运动）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score;
+    li.title=ROSTER[r.id].name+'：日常分（喝水＋无糖＋热水）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score+'\nS1 荣誉：'+(S1_HONORS[r.id]&&S1_HONORS[r.id].crowns?S1_HONORS[r.id].crowns+' 冠':"无");
     ul.appendChild(li); rank++;
   });
   renderBoardChal();
@@ -1037,7 +1138,8 @@ function renderCounter(){
   var dt=state.players[id].days[d]||{meals:0,weigh:0,exercise:0};
   var m=dt.meals||0, w=dt.weigh||0, e=dt.exercise||0;
   var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH), ec=Math.min(e,MAX_EXERCISE);
-  var mealFull=(m>=MAX_MEALS);          /* ★ 健康餐满 3 顿 → 锁住 */
+  var mealFull=(m>=MAX_MEALS);          /* ★ S2：喝水每天 1 次 */
+  var wFull=(w>=MAX_WEIGH);             /* ★ S2：无糖每天 1 次 */
   var exFull=(e>=MAX_EXERCISE);         /* ★ 运动满 1 次 → 锁住（每天最多 1 次） */
   var overWeigh=(w>MAX_WEIGH);
 
@@ -1049,13 +1151,13 @@ function renderCounter(){
 
   var dscore=dailyScore(id), cpts=challengePts(id);
   $('counterStat').innerHTML=
-    '第 '+d+' 天：健康餐 '+m+'/'+MAX_MEALS+' 餐 <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 上称 '+w+' 次 <span class="cap">（计 '+wc+' 分）</span> · 运动 '+e+'/'+MAX_EXERCISE+' 次 <span class="cap">（计 '+ec+' 分'+(exFull?' · 已满':'')+'）</span><br/>'+
-    '本日得分 <b>'+(mc+wc+ec)+'</b> / '+DAY_CAP+' 分（健康餐 '+mc+' 餐 + 上称 '+wc+' + 运动 '+ec+'） &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
+    '第 '+d+' 天：💧喝够1.5L水 '+m+'/'+MAX_MEALS+' <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 🚫没喝含糖饮料 '+w+'/'+MAX_WEIGH+' <span class="cap">（计 '+wc+' 分'+(wFull?' · 已满':'')+'）</span> · ♨️50%喝热水 '+e+'/'+MAX_EXERCISE+' <span class="cap">（计 '+ec+' 分'+(exFull?' · 已满':'')+'）</span><br/>'+
+    '本日得分 <b>'+(mc+wc+ec)+'</b> / '+DAY_CAP+' 分（喝水 '+mc+' + 无糖 '+wc+' + 热水 '+ec+'） &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
     '<span class="cap">（日常 '+dscore+' ＋ 挑战 '+cpts+'）</span>'+
-    '<br/><span class="cap">超出部分不计分（每日上限 '+DAY_CAP+' 分：'+MAX_MEALS+'餐 + '+MAX_WEIGH+'上称 + '+MAX_EXERCISE+'运动）</span>'+
-    (mealFull?'<br/><span class="cap">健康餐 '+MAX_MEALS+'/'+MAX_MEALS+' 已满 · 上称可多记但只计 1 分</span>':'')+
+    '<br/><span class="cap">每项每天各计 1 次，合计每日上限 '+DAY_CAP+' 分（喝水1 + 无糖1 + 热水1）</span>'+
+    (mealFull?'<br/><span class="cap">💧喝水 ✅ 已记</span>':'')+
     (exFull?'<br/><span class="cap">运动 '+MAX_EXERCISE+'/'+MAX_EXERCISE+' 已满（每天只计 1 分）</span>':'')+
-    (overWeigh?'<br/><span class="cap">上称超出部分不计分（每天只计 1 分）</span>':'');
+    '';
 
   var sel=$('daySelect');
   /* ★ v4（3.1）：选项 1..maxDay。正式模式 maxDay=今天（未来天不进选项，防提前录分）；DEV 模式仍是 1..7。
@@ -1070,9 +1172,9 @@ function renderCounter(){
   sel.disabled=!scoringOpen();
 
   var open=scoringOpen();
-  $('btnMeal').disabled=!open||mealFull;    /* ★ 满 3 顿锁住；上称不锁 */
-  $('btnWeigh').disabled=!open;             /* 上称可一直点（只计 1 分） */
-  $('btnExercise').disabled=!open||exFull;  /* ★ 运动满 1 次锁住（每天最多 1 次） */
+  $('btnMeal').disabled=!open||mealFull;    /* ★ 喝够1.5L水：每天 1 次 */
+  $('btnWeigh').disabled=!open||mealFull;   /* ★ 不喝含糖饮料：每天 1 次 */
+  $('btnExercise').disabled=!open||exFull;  /* ★ 50%热水：每天 1 次 */
   $('btnUndo').disabled=!open;
   $('btnClear').disabled=!open;
   $('btnSettle').disabled=!settleOpen();
@@ -1100,7 +1202,7 @@ function addMeal(){
   if(!scoringOpen()) return;
   var id=editId(), d=currentDay(), dt=getDay(id,d);
   var before=(dt.meals||0);
-  if(before>=MAX_MEALS){ toast('健康餐已达上限 '+MAX_MEALS+' 餐'); return; }   /* ★ 锁 3 顿 */
+  if(before>=MAX_MEALS){ toast('今天已经记过💧喝水啦'); return; }
   dt.meals=Math.min(before+1,MAX_MEALS);
   undoStack.push({id:id,day:d,field:'meals',delta:dt.meals-before});
   save(); renderAll();
@@ -1258,11 +1360,11 @@ function renderCard(){
     var quote=encouragement(id,S);
     $('cardBody').innerHTML=
       '<h2>🎉 祝贺你成功完赛【'+state.season+'】</h2>'+
-      '<div style="text-align:center;font-size:15px;font-weight:900;color:#0b5d3b;margin:6px 0 8px;">本赛季你的记录</div>'+
+      '<div style="text-align:center;font-size:15px;font-weight:900;color:#0b6d9e;margin:6px 0 8px;">本赛季你的记录</div>'+
       '<div class="recgrid">'+
         '<div class="r"><span>打卡天数</span><span>'+daysChecked(id)+' / '+SEGMENT_DAYS+' 天</span></div>'+
         '<div class="r"><span>三餐全勤</span><span>'+fullMealDays(id)+' 天</span></div>'+
-        '<div class="r"><span>上称记录</span><span>'+weighDays(id)+' 天</span></div>'+
+        '<div class="r"><span>没喝含糖·记录</span><span>'+weighDays(id)+' 天</span></div>'+
         '<div class="r"><span>挑战完成</span><span>'+done+' 个</span></div>'+
         '<div class="r"><span>累计皇冠</span><span>'+state.players[id].crowns+' 顶 👑</span></div>'+
         '<div class="r"><span>总分</span><span>'+totalScore(id)+' 分</span></div>'+
@@ -1293,7 +1395,11 @@ function loginAs(id){
   state.currentUser=id; editTarget=null; undoStack=[]; chalDraft={};
   save({quiet:true});          /* ★ 登录状态是本机的事：不刷 updatedAt，也不触发上传 */
   showMain(); toast('欢迎，'+ROSTER[id].name+'！');
-  if(SYNC.token) doPull({});
+  if(SYNC.token){
+    /* ★ S2：先推一次本地状态，把云端的 S1 数据顶掉，再拉 */
+    try{ schedulePush(); }catch(e){}
+    doPull({});
+  }
 }
 function logout(){
   state.currentUser=null; editTarget=null; chalDraft={};
@@ -1621,7 +1727,7 @@ function buildCloudPayload(){
   return chain.then(function(){
     var text=JSON.stringify(snap);
     var bytes=utf8Bytes(text);
-    return {text:text,bytes:bytes,oversize:bytes>SYNC.CLOUD_LIMIT,compressed:jobs};
+    return {snap:snap,text:text,bytes:bytes,oversize:bytes>SYNC.CLOUD_LIMIT,compressed:jobs};
   });
 }
 
@@ -1647,6 +1753,14 @@ function stateHasData(s){
 /* ---------- 应用云端数据（按 updatedAt 取新后用）---------- */
 function applyRemote(remote){
   if(!remote||!isOurState(remote)) return false;
+  /* ★★ S2 赛季保护：云端若仍是旧赛季（s1-*）数据，一律忽略，防止 S1 数据回流
+     覆盖本地已重置的 S2 状态。本地随后会把 S2 数据推上去顶替云端。 */
+  if(remote.season && String(remote.season)!==String(SEASON)){
+    console.log('[S2] 云端为旧赛季「'+remote.season+'」，已忽略（将用本地 S2 覆盖云端）');
+    SYNC.msg='云端仍是旧赛季数据，本地已切到 '+SEASON;
+    try{ renderSyncLine&&renderSyncLine(); }catch(e){}
+    return false;
+  }
   var keepUser=state.currentUser, keepDay=state.dayOverride;
   SYNC.applying=true;
   try{
@@ -1690,7 +1804,38 @@ function doUpload(opt){
         if(opt.manual) toast('云端数据较新，已改为拉取');
         return false;
       }
-      return cloudPut(p.text,res.sha,msgOf(p)).then(function(j){
+      /* ★★ 2026-10-19 关键修复：只上传「自己那一份」，别人的数据原样保留云端版本。
+         事故原因：芋头设备里只有自己的数据，一上传就把整份 cloud.json 覆盖 → 别人全归零。
+         例外：DEV_MODE（?dev=1 后门）下允许全量上传，方便主持人代填/修数据。 */
+      var putText=p.text;
+      if(remote&&isOurState(remote)&&remote.players&&p.snap&&p.snap.players&&!DEV_MODE){
+        var _me=state.currentUser;
+        if(_me&&ROSTER[_me]){
+          var _m=JSON.parse(JSON.stringify(p.snap));
+          _m.updatedAt=p.snap.updatedAt;
+          var _kept=[];
+          ORDER.forEach(function(_id){
+            if(_id!==_me&&remote.players[_id]){ _m.players[_id]=remote.players[_id]; _kept.push(_id); }
+          });
+          /* ★★ 皇冠/刀是全队共享的，个人设备无权改 —— 一律以云端为准。
+             否则任何人的旧设备一上传，就会把刚结算加的冠冲回去（10-19 实际发生过）。 */
+          if(_m.players&&_m.players[_me]&&remote.players&&remote.players[_me]){
+            var _mine={days:_m.players[_me].days||{},
+                       challenge:_m.players[_me].challenge,
+                       avatar:_m.players[_me].avatar,
+                       crowns:remote.players[_me].crowns,
+                       knives:remote.players[_me].knives};
+            _m.players[_me]=_mine;
+          }
+          ['settled','crownBase','lastTop2','segTitle','titleAuto','assassin',
+           'season','segment','segStart'].forEach(function(_f){
+            if(remote[_f]!==undefined) _m[_f]=remote[_f];
+          });
+          putText=JSON.stringify(_m);
+          try{ console.log('[同步] 仅上传 '+ROSTER[_me].name+' 的数据；保留云端 '+_kept.join('/')); }catch(e){}
+        }
+      }
+      return cloudPut(putText,res.sha,msgOf(p)).then(function(j){
         SYNC.remoteSha=(j&&j.content&&j.content.sha)||res.sha||null;
         SYNC.authFailed=false; SYNC.lastSync=Date.now();
         syncSet('ok',(p.compressed&&p.compressed.length)?('已连接 · 已上传（压缩了 '+p.compressed.length+' 个头像）'):'已连接 · 已上传到云端');
@@ -1699,7 +1844,7 @@ function doUpload(opt){
       },function(e){
         if(e&&e.status===409){                      /* 别人刚改过 → 重取 sha 再传一次 */
           return cloudGet().then(function(res2){
-            return cloudPut(p.text,res2.sha,msgOf(p)).then(function(j){
+            return cloudPut(putText,res2.sha,msgOf(p)).then(function(j){
               SYNC.remoteSha=(j&&j.content&&j.content.sha)||res2.sha||null;
               SYNC.authFailed=false; SYNC.lastSync=Date.now();
               syncSet('ok','已连接 · 已上传（重试成功）');
@@ -1813,7 +1958,7 @@ function probeRemote(){
 /* ---------- 轮询专用拉取：先探测，未变化就静默跳过 ---------- */
 function probePull(opt){
   opt=opt||{};
-  if(!SYNC.token){ return Promise.resolve(false); }
+  /* ★ 2026-10-19：探测云端不需要令牌（只读） */
   if(SYNC.pulling||SYNC.pushing||SYNC.probing) return Promise.resolve(false);
   return probeRemote().then(function(res){
     if(!res||res.notModified||!res.changed) return false;   /* ★ 304：静默跳过（不渲染/不改状态行） */
@@ -1861,7 +2006,7 @@ function schedulePoll(){
   clearTimeout(SYNC.pollTimer);
   var delay=SYNC.authFailed?SYNC.BACKOFF_MS:SYNC.POLL_MS;
   SYNC.pollTimer=setTimeout(function(){
-    if(SYNC.token&&document.visibilityState==='visible') probePull({});   /* ★ 条件探测 */
+    if(document.visibilityState==='visible') probePull({});   /* ★ 2026-10-19：无令牌也探测（只读） */
     schedulePoll();
   },delay);
 }
@@ -1894,21 +2039,22 @@ function syncInit(){
   if(!ok){ syncSet('err','此浏览器不支持云同步（用新版 Chrome/Edge/Safari 即可）'); return; }
   syncLoadToken();
   bindSyncUI();
+  /* ★ 2026-10-19：无令牌也联网「读」（公开仓库 GET 免鉴权）。
+     没令牌 = 只读模式：能看到所有人的云端分数，但改不了（要存需粘钥匙）。 */
   if(!SYNC.token){
-    syncSet('err','未配置钥匙：需要在设置里粘贴 GitHub 令牌');
-    syncRenderStatus();                        /* 不报错、不联网：其余功能照常离线用 */
+    syncSet('ok','只读模式：能看到云端分数；要补分需在设置里粘贴钥匙');
   }else{
     syncSet('ok','已连接');
-    schedulePoll();
-    setTimeout(function(){ probePull({}); },600);
   }
+  schedulePoll();
+  setTimeout(function(){ probePull({}); },400);
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'){
-      if(SYNC.token) probePull({});             /* 页面重新可见 → 立刻探测一次 */
+      probePull({});                            /* 页面重新可见 → 立刻探测一次（无令牌也可） */
       schedulePoll();
     }
   });
-  window.addEventListener('online',function(){ if(SYNC.token){ SYNC.authFailed=false; probePull({}); } });
+  window.addEventListener('online',function(){ SYNC.authFailed=false; probePull({}); });
 }
 
 /* =========================================================
