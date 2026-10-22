@@ -700,8 +700,11 @@ function me(){ return state.currentUser; }
    10/19 00:00 起一律锁死（录分结束，不补录）。已无 06:00–23:00 时段限制。 */
 function scoringOpen(){
   if(DEV_MODE) return true;
+  var t=nowMs();
+  /* ★★ 未开赛：一律不许录分（原版漏了这一句，会在开赛前就能打卡刷分） */
+  if(t<segStartMs()) return false;
   /* ★ 2026-10-19：赛段结束后还有 BACKFILL_GRACE_DAYS 天的补录期，此期间仍可录分（补录往期） */
-  return nowMs()<segEndMs()+BACKFILL_GRACE_DAYS*86400000;
+  return t<segEndMs()+BACKFILL_GRACE_DAYS*86400000;
 }
 /* 结算：第 7 天（最后一天）0 点起开放，即 10/18 00:00 起；录分截止后依然可点 */
 function settleOpen(){
@@ -719,7 +722,7 @@ function windowHint(){
     return '赛段已结束 · 补录期也已结束（'+fmtMD(graceEnd)+' 24:00 截止）';
   if(nowMs()>=segEndMs())
     return '赛段已结束 · 补录期内可补第 1–'+SEGMENT_DAYS+' 天（截止 '+fmtMD(graceEnd)+' 24:00）';
-  if(nowMs()<segStartMs()) return '第 0/'+SEGMENT_DAYS+' 天 · 赛段 '+fmtMD(start)+' 开始（现在已可先录分）';
+  if(nowMs()<segStartMs()) return '赛段 '+fmtMD(start)+' 开赛 · 距开赛还有 '+Math.ceil((segStartMs()-nowMs())/86400000)+' 天（未开赛，暂不可录分）';
   return '第 '+currentDay()+'/'+SEGMENT_DAYS+' 天 · 在可录分窗口内（'+fmtMD(start)+'—'+fmtMD(lastEnd)+'，全天可录）';
 }
 
