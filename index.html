@@ -410,9 +410,10 @@ var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=3, CHALLENGE_PTS=20;
 /* ★★ S2 参赛者：3 人。芋头(hyt) 可玩可打卡，但不进排名、不参与结算 */
 var PARTICIPANTS=['gd','clm','lmh'];
 /* ★★ S1 荣誉存档（只在头像上展示，不参与 S2 计分）
-   S1 结算：蛋蛋(clm)=河贼王 2冠、栋栋(gd)=河贼公 1冠、西瓜(lmh)=1冠、芋头(hyt)=0冠 */
+   按作者确认：蛋蛋(clm)=大王（河贼王）、栋栋(gd)=小王（河贼公）
+                西瓜(lmh)=平民、芋头(hyt)=平民（均无冠） */
 var S1_HONORS={clm:{level:'king',crowns:2}, gd:{level:'duke',crowns:1},
-               lmh:{level:'duke',crowns:1}, hyt:{level:null,crowns:0}};
+               lmh:{level:null,crowns:0}, hyt:{level:null,crowns:0}};
 /* ★★ S2 初始化标记：用于判断「是否需要彻底重置」。
    修改这个值 = 强制所有客户端重置（赛季切换时改一次即可） */
 var SEASON_INIT_TAG='s2-大水赛季_seg1_20261023';
