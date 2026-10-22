@@ -1089,10 +1089,9 @@ function renderBoard(){
        刺客标记🔪只出现在本人计分器「换头像」按钮旁的徽章里（myBadgeHTML）。 */
     li.innerHTML='<span class="rk">'+rank+'</span>'+
       '<span class="avwrap"><span class="av">'+avatarInner(r.id)+'</span>'+s1HonorHTML(r.id)+'</span>'+
-      '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+
-        '<span class="starnum" title="本季星数">'+starStr(r.id)+'</span></span></span>'+
+      '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
       '<span class="pt">'+r.score+'</span>';
-    li.title=ROSTER[r.id].name+'：日常分（喝水＋无糖＋热水）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score+'\nS1 荣誉：'+(S1_HONORS[r.id]&&S1_HONORS[r.id].crowns?S1_HONORS[r.id].crowns+' 冠':"无");
+    li.title=ROSTER[r.id].name+'：日常分（喝水＋无糖＋热水）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score+'\nS1 荣誉：'+(S1_HONORS[r.id]&&S1_HONORS[r.id].stars?S1_HONORS[r.id].stars+' 星':"无");
     ul.appendChild(li); rank++;
   });
   renderBoardChal();
@@ -1184,6 +1183,7 @@ function renderCounter(){
   var overWeigh=(w>MAX_WEIGH);
 
   var who='<div class="av">'+avatarInner(id)+'</div><b>'+ROSTER[id].name+'</b>';
+  who+='<span class="starnum" title="本季星数">'+starStr(id)+'</span>';   /* ★ 星星只显示在计分栏头像旁 */
   who+=myBadgeHTML(id);
   if(DEV_MODE&&editTarget&&editTarget!==me()) who+='<span style="font-size:11px;color:#b07a00;font-weight:800;">（测试代填）</span>';
   if(me()===id&&!editTarget) who+='<button class="btn-ghost" id="btnAvatar" style="padding:4px 9px;font-size:12px;border-radius:9px;margin-left:2px;">换头像</button>';
@@ -1213,7 +1213,7 @@ function renderCounter(){
 
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 喝够1.5L水：每天 1 次 */
-  $('btnWeigh').disabled=!open||mealFull;   /* ★ 不喝含糖饮料：每天 1 次 */
+  $('btnWeigh').disabled=!open||wFull;      /* ★ 不喝含糖饮料：每天 1 次（原来错用 mealFull，导致喝水后这个也被锁） */
   $('btnExercise').disabled=!open||exFull;  /* ★ 50%热水：每天 1 次 */
   $('btnUndo').disabled=!open;
   $('btnClear').disabled=!open;
