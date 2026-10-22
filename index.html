@@ -267,7 +267,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     </div>
 
     <div class="board">
-      <h3>本赛段排行榜 <span style="font-size:10.5px;font-weight:700;color:#5b7f96;letter-spacing:0;">· 3人赛制（芋头可玩不排名）</span></h3>
+      <h3>本赛段排行榜 <span style="font-size:10.5px;font-weight:700;color:#5b7f96;letter-spacing:0;">· 3人赛制</span></h3>
       <ul class="blist" id="boardList"></ul>
       <div class="cbh">本期挑战</div>
       <ul class="cblist" id="boardChal"></ul>
@@ -276,7 +276,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     <div class="chalpanel">
       <h3>本期挑战 <span class="admin">（每人 1 条 · 这里只显示自己的）</span></h3>
       <div id="chalList"></div>
-      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+20</b> 挑战分（不受每日 5 分上限限制）。</div>
+      <div class="note">点「保存」才真正存住；保存后<b>只允许再改 1 次</b>，改过就锁住。勾选「✅ 完成」计入 <b>+12</b> 挑战分（不受每日 3 分上限限制）。</div>
     </div>
 
     <div class="counter">
@@ -298,7 +298,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <button class="btn-ghost" id="btnClear" style="grid-column:1/-1;">清空本日</button>
       </div>
 
-      <div class="note">计分说明：日常分（每天上限 <b>3</b> 分＝<b>喝够1.5L水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>饮水50%以上为热水 +1</b>，每项每天各计 1 次）＋ 挑战分（完成 <b>+20</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S2「大水赛季」。</div>
+      <div class="note">计分说明：日常分（每天上限 <b>3</b> 分＝<b>喝够1.5L水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>饮水50%以上为热水 +1</b>，每项每天各计 1 次）＋ 挑战分（完成 <b>+12</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S2「大水赛季」。</div>
 
       <button class="btn-primary save" id="btnSave">保 存</button>
       <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
@@ -335,12 +335,6 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <select id="setDuke"></select>
       </div>
       <div class="note" style="margin-top:8px;">下面这两个下拉只作调试用（选了就临时覆盖自动称号）。左＝河贼王（大王冠，敬献 10r/人）　右＝河贼公（小王冠，敬献 5r/人）</div>
-    </div>
-
-    <div class="setrow">
-      <label>本期刺客（固定）</label>
-      <div class="note" style="margin-top:0;"><b>🔪 本期刺客：芋头（hyt）</b>　—— 本期已写死，不开放修改；下一期再补充刺客计算规则。</div>
-      <div class="note" style="margin-top:8px;">弑君成功要同时满足三条：① 刺客计分进前二 ② 目标（结算前的当前王/公）计分进后二 ③ 刺客分 &gt; 目标分。满足了 → 本局无王，刺客免出钱、免纳贡（场上还有公，公照常收敬献）；没满足 → 按普通人结算，画面写「这次没刺杀成功，下次一定」。</div>
     </div>
 
     <div class="setrow">
@@ -419,7 +413,7 @@ var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
      meals    → 喝够 1.5L 水      +1
      weigh    → 不喝含糖饮料       +1
      exercise → 饮水 50% 以上为热水 +1 */
-var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=3, CHALLENGE_PTS=20;
+var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=3, CHALLENGE_PTS=12;
 /* ★★ S2 参赛者：3 人。芋头(hyt) 可玩可打卡，但不进排名、不参与结算 */
 var PARTICIPANTS=['gd','clm','lmh'];
 /* ★★ S1 荣誉存档（只作头像展示，不参与 S2 任何计分/结算）
@@ -1104,7 +1098,7 @@ function renderBoardChal(){
     if(!txt) return;
     n++;
     var li=document.createElement('li');
-    var st=c.done?'<span class="st done">✅已完成 +20</span>':'<span class="st">未完成</span>';
+    var st=c.done?'<span class="st done">✅已完成 +12</span>':'<span class="st">未完成</span>';
     li.innerHTML='<span class="nm">'+ROSTER[id].name+'</span><span class="txt">——'+esc(txt)+'</span>'+st;
     ul.appendChild(li);
   });
@@ -1133,7 +1127,7 @@ function renderChallenges(){
     '<div class="av">'+avatarInner(id)+'</div>'+
     '<div class="crt"><div class="nm">'+ROSTER[id].name+' 的本期挑战</div>'+
     '<input type="text" id="chalInput"'+(editable?'':' disabled')+' placeholder="例如：每天走8000步…" value="'+esc(draft)+'"/></div>'+
-    '<label class="ck'+(c.done?'':' off')+'"><input type="checkbox" id="chalDone"'+(c.done?' checked':'')+'/>✅ 完成<br/>+20</label>';
+    '<label class="ck'+(c.done?'':' off')+'"><input type="checkbox" id="chalDone"'+(c.done?' checked':'')+'/>✅ 完成<br/>+12</label>';
   box.appendChild(row);
 
   var tip=editable
@@ -1151,7 +1145,7 @@ function renderChallenges(){
   $('chalDone').addEventListener('change',function(){
     state.players[id].challenge.done=this.checked;
     save(); renderAll();
-    toast(this.checked?(ROSTER[id].name+' 挑战完成 +20 分'):(ROSTER[id].name+' 挑战分已撤回 −20 分'));
+    toast(this.checked?(ROSTER[id].name+' 挑战完成 +12 分'):(ROSTER[id].name+' 挑战分已撤回 −12 分'));
   });
 }
 function saveChallengeText(id){
