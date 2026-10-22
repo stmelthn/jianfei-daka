@@ -80,6 +80,9 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .s1crown{position:absolute;top:-9px;right:-7px;font-size:15px;line-height:1;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));pointer-events:none;}
 .s1crown.small{font-size:12px;top:-7px;right:-5px;opacity:.92;}
+.devbanner{background:linear-gradient(90deg,#ffb300,#ff8f00);color:#3a2600;font-size:12px;
+  font-weight:800;line-height:1.5;padding:8px 12px;border-radius:10px;margin:0 0 10px;
+  text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.18);}
 .starnum{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;
   color:#0b6d9e;background:rgba(26,149,212,.13);border-radius:8px;padding:1px 6px;
   letter-spacing:0;vertical-align:middle;}
@@ -249,6 +252,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 <!-- ============ 主页面 ============ -->
 <div id="mainScreen" class="screen hidden">
   <div class="wrap">
+    <div id="devBanner" class="devbanner hidden">🧪 测试模式已开启：时间锁已放开，打卡会写入正式数据 —— 测完请到设置里关掉</div>
     <header class="topbar">
       <div class="topseason">
         <div class="s1">【s2-大水赛季】健康饮水打卡</div>
@@ -340,7 +344,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
     </div>
 
     <div class="setrow">
-      <label>赛段起始日期（赛段号写死为第 3 赛段，改代码里的 SEG_NO 即可）</label>
+      <label>赛段起始日期（当前写死为 S2 第 1 赛段，改代码里的 SEG_NO 即可）</label>
       <div class="note" style="margin-top:0;">计分窗口 = 起始日起 <b>7 天</b>：起始日 00:00 — 第 7 日 24:00 全天可录分（无时段限制）；第 7 日 00:00 起开放结算；窗口结束后计分键锁死（不补录）。</div>
       <input type="date" id="setStart"/>
     </div>
@@ -359,6 +363,12 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <button class="btn-ghost" id="btnSyncPull">⬇ 拉取云端数据</button>
       </div>
       <div class="note" style="margin-top:8px;">自动同步：改分 / 点保存后 <b>5 秒</b>自动上传；页面开着时每 <b>45 秒</b>探测一次云端（<b>ETag 条件请求</b>：云端没变只回一个 0 字节的 304，不下载正文、不重画；画面不可见就停）。冲突按 <b>updatedAt（最后改动时间）</b>取新的那份，不会无脑覆盖。</div>
+    </div>
+
+    <div class="setrow">
+      <label>🧪 测试模式</label>
+      <div class="note" style="margin-top:0;">开赛前赛段是锁着的，打不了卡。打开测试模式后，<b>时间锁全部放开</b>（可打卡、可结算、可补录任意天），用于赛前试功能。<br/><b style="color:#c0392b;">测试完请关掉</b>，否则测试打卡会算进正式成绩。</div>
+      <button class="btn-ghost" id="btnDevToggle" style="width:100%;margin-top:8px;">当前：关闭（点击开启）</button>
     </div>
 
     <div class="setrow">
@@ -434,6 +444,8 @@ var ASSASSIN_ID='hyt';
    DEV_MODE=true 时：计分 / 结算 / 时间锁全部放开。 */
 var DEV_MODE=false;
 try{ if(/[?&]dev=1(?:&|$)/.test(String(location.search||''))) DEV_MODE=true; }catch(e){}
+/* ★ 2026-10-22：测试模式可由设置面板切换，状态存本机（刷新不丢） */
+try{ if(localStorage.getItem('jianfei_devmode')==='1') DEV_MODE=true; }catch(e){}
 /* ★ 赛段起始日：计分窗口 = 起始日 00:00 起，共 7 天（第 7 日 24:00 止） */
 var SEG_START_DEF='2026-10-23';
 var SEGMENT_DAYS=7;
@@ -1546,8 +1558,9 @@ function bind(){
   $('cardPrev').onclick=function(){ if(cardPage>1){ cardPage--; renderCard(); } };
   $('cardNext').onclick=function(){ if(cardPage<2){ cardPage++; renderCard(); } };
 
-  $('btnGear').onclick=openSettings;
+  $('btnGear').onclick=function(){ try{ renderDevBtn(); }catch(e){} openSettings(); };
   $('setClose').onclick=function(){ applySettings(); closeSettings(); };
+  if($('btnDevToggle')) $('btnDevToggle').onclick=function(){ setDevMode(!DEV_MODE); };
   $('setKing').onchange=applySettings;
   $('setDuke').onchange=applySettings;
   $('setStart').onchange=applySettings;
@@ -2038,6 +2051,25 @@ function schedulePoll(){
   },delay);
 }
 
+/* ---------- 🧪 测试模式开关 ---------- */
+function renderDevBtn(){
+  var b=document.getElementById('btnDevToggle');
+  if(b){
+    b.textContent = DEV_MODE ? '当前：✅ 已开启（点击关闭）' : '当前：关闭（点击开启）';
+    b.style.background = DEV_MODE ? 'rgba(255,179,0,.28)' : '';
+    b.style.fontWeight = DEV_MODE ? '900' : '';
+  }
+  var bn=document.getElementById('devBanner');
+  if(bn){ if(DEV_MODE) bn.classList.remove('hidden'); else bn.classList.add('hidden'); }
+}
+function setDevMode(v){
+  DEV_MODE=!!v;
+  try{ localStorage.setItem('jianfei_devmode', DEV_MODE?'1':'0'); }catch(e){}
+  renderDevBtn();
+  try{ renderAll(); }catch(e){}
+  toast(DEV_MODE?'🧪 测试模式已开启：现在可以打卡/结算了':'测试模式已关闭：恢复正式时间锁');
+}
+
 /* ---------- 设置面板里的按键 ---------- */
 function bindSyncUI(){
   var ti=document.getElementById('setToken');
@@ -2094,6 +2126,7 @@ function boot(){
   else{ showLogin(); }
 }
 boot();
+try{ renderDevBtn(); }catch(e){}
 
 /* =========================================================
    14. 调试 / 自测接口（控制台用）
