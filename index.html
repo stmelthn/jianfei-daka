@@ -339,7 +339,14 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
     <div class="setrow">
       <label>赛段起始日期（当前写死为 S2 第 1 赛段，改代码里的 SEG_NO 即可）</label>
-      <div class="note" style="margin-top:0;">计分窗口 = 起始日起 <b>7 天</b>：起始日 00:00 — 第 7 日 24:00 全天可录分（无时段限制）；第 7 日 00:00 起开放结算；窗口结束后计分键锁死（不补录）。</div>
+      <div class="note" style="margin-top:0;">计分窗口 = 起始日起 <b>7 天</b>：起始日 00:00 — 第 7 日 24:00 全天可录分（无时段限制）；第 7 日 00:00 起开放结算。</div>
+      <div class="note" style="margin-top:8px;background:rgba(26,149,212,.10);border-left:3px solid #0b6d9e;padding:8px 10px;border-radius:6px;">
+        <b>📌 结算日与补分规则</b><br/>
+        · <b>第 7 日 24:00 赛段结束</b>，随即开放结算（主持人点结算，第 2、3 名各出 6r 给第 1 名，冠军 +1 星）<br/>
+        · <b>结束后再给 3 天补分期</b>（第 8–10 天）：这 3 天里所有人都能补录第 1–7 天<b>漏记的分</b>，下拉框选哪天就补哪天<br/>
+        · 补分期<b>不能录入未来日期</b>，也只能补<b>自己</b>的分<br/>
+        · <b>补分期结束后计分键才真正锁死</b>，此后不能再改分
+      </div>
       <input type="date" id="setStart"/>
     </div>
 
@@ -431,7 +438,10 @@ var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 第一�
 var KING_FEE=0, DUKE_FEE=0;    /* ★ S2 取消赛季敬献（无 5r/10r） */
 var STORE_KEY='jianfei_score_v2';
 /* ★ 本期刺客写死为芋头（hyt）：设置面板不再开放修改，下一期再补充刺客计算规则 */
-var ASSASSIN_ID='hyt';
+/* ★ 2026-10-22 作者要求：本赛段暂不启用刺客（芋头不担任刺客）。
+   弑君规则代码全部保留（computeSettlement 内的 killSuccess 判定、buildTribute 的免出钱分支、
+   头像 🔪 徽章），以后要恢复只需把下面这行的 null 改回 'hyt' 即可。 */
+var ASSASSIN_ID=null;
 /* ★★ 开发模式开关（默认 false＝正式版）。
    ① 开发者要长期解锁：把下面 false 改成 true；
    ② 临时后门：用带参数的网址打开 → ?dev=1（不写进界面、页面上无任何提示）。
