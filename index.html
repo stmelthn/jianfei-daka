@@ -80,6 +80,9 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .s1crown{position:absolute;top:-9px;right:-7px;font-size:15px;line-height:1;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));pointer-events:none;}
 .s1crown.small{font-size:12px;top:-7px;right:-5px;opacity:.92;}
+.starnum{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;
+  color:#0b6d9e;background:rgba(26,149,212,.13);border-radius:8px;padding:1px 6px;
+  letter-spacing:0;vertical-align:middle;}
 .blist li .av{width:32px;height:32px;border-radius:50%;background:#fff;color:#111;border:2px solid #e0b64a;
   display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex:0 0 auto;overflow:hidden;}
 .blist li .av img{width:100%;height:100%;object-fit:cover;}
@@ -321,7 +324,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 
     <div class="setrow">
       <label>称号（默认自动：按皇冠数算）</label>
-      <div class="note" style="margin-top:0;">自动规则：<b>1 冠 → 无称号</b>；<b>2 冠 → 河贼公·XX小王</b>；<b>3 冠 → 河贼王·XX大王</b>（一赛季最多 3 冠）</div>
+      <div class="note" style="margin-top:0;">星星规则：<b>每赛段冠军 +1 星</b>（并列不发星）｜<b>1 星 → 平民</b>（无冠）；<b>2 星 → XX小王</b>（小王冠）；<b>3 星 → XX大王</b>（大王冠）｜累计上限 3 星</div>
       <button class="btn-ghost" id="setAutoTitle" style="width:100%;margin-top:8px;">恢复自动称号</button>
       <div class="inline" style="margin-top:8px;">
         <select id="setKing"></select>
@@ -409,11 +412,14 @@ var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
 var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=1, DAY_CAP=3, CHALLENGE_PTS=20;
 /* ★★ S2 参赛者：3 人。芋头(hyt) 可玩可打卡，但不进排名、不参与结算 */
 var PARTICIPANTS=['gd','clm','lmh'];
-/* ★★ S1 荣誉存档（只在头像上展示，不参与 S2 计分）
-   按作者确认：蛋蛋(clm)=大王（河贼王）、栋栋(gd)=小王（河贼公）
-                西瓜(lmh)=平民、芋头(hyt)=平民（均无冠） */
-var S1_HONORS={clm:{level:'king',crowns:2}, gd:{level:'duke',crowns:1},
-               lmh:{level:null,crowns:0}, hyt:{level:null,crowns:0}};
+/* ★★ S1 荣誉存档（只作头像展示，不参与 S2 任何计分/结算）
+   星星体系：1赛段冠军=1星；2星=小王(小王冠)；3星=大王(大王冠)；不足2星=平民(无冠)
+   S1 最终星数：蛋蛋(clm)=3星→大王　栋栋(gd)=2星→小王
+                西瓜(lmh)=1星→平民　芋头(hyt)=0星→平民 */
+var S1_HONORS={clm:{stars:3,level:'king'},
+               gd :{stars:2,level:'duke'},
+               lmh:{stars:1,level:null},
+               hyt:{stars:0,level:null}};
 /* ★★ S2 初始化标记：用于判断「是否需要彻底重置」。
    修改这个值 = 强制所有客户端重置（赛季切换时改一次即可） */
 var SEASON_INIT_TAG='s2-大水赛季_seg1_20261023';
@@ -999,9 +1005,22 @@ function crownHTML(kind){
    按 S1 最终冠数：2冠→大王冠（河贼王）、1冠→小王冠（河贼公）、0冠→无 */
 function s1HonorHTML(id){
   var h=S1_HONORS[id];
-  if(!h||!h.crowns) return '';
-  if(h.crowns>=2) return '<span class="s1crown" title="S1 河贼王">👑</span>';
-  return '<span class="s1crown small" title="S1 河贼公">👑</span>';
+  if(!h||!h.stars) return '';
+  /* 3星→大王冠（大王）　2星→小王冠（小王）　不足2星→平民不戴冠 */
+  if(h.stars>=3) return '<span class="s1crown" title="S1 大王（3星）">👑</span>';
+  if(h.stars===2) return '<span class="s1crown small" title="S1 小王（2星）">👑</span>';
+  return '';
+}
+/* ★ 星星显示：⭐×n + 称号 */
+function starStr(id){
+  var n=state.players[id]?state.players[id].crowns:0;
+  var t='⭐'+n;
+  if(n>=3) t+=' 大王'; else if(n===2) t+=' 小王'; else t+=' 平民';
+  return t;
+}
+function starLevelName(id){
+  var n=state.players[id]?state.players[id].crowns:0;
+  if(n>=3) return '大王'; if(n===2) return '小王'; return '平民';
 }
 function crownsInline(id){
   var p=state.players[id],out='';
@@ -1054,7 +1073,8 @@ function renderBoard(){
        刺客标记🔪只出现在本人计分器「换头像」按钮旁的徽章里（myBadgeHTML）。 */
     li.innerHTML='<span class="rk">'+rank+'</span>'+
       '<span class="avwrap"><span class="av">'+avatarInner(r.id)+'</span>'+s1HonorHTML(r.id)+'</span>'+
-      '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
+      '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+
+        '<span class="starnum" title="本季星数">'+starStr(r.id)+'</span></span></span>'+
       '<span class="pt">'+r.score+'</span>';
     li.title=ROSTER[r.id].name+'：日常分（喝水＋无糖＋热水）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score+'\nS1 荣誉：'+(S1_HONORS[r.id]&&S1_HONORS[r.id].crowns?S1_HONORS[r.id].crowns+' 冠':"无");
     ul.appendChild(li); rank++;
@@ -1263,11 +1283,14 @@ function openSettle(){
   ORDER.forEach(function(id){ before[id]=state.players[id].crowns; });
   ORDER.forEach(function(id){ state.players[id].crowns=state.crownBase[id]; });
   var rk=ranking();
-  var top2=[rk[0].id,rk[1].id];
+  /* ★★ S2：只有赛段第 1 名得 1 颗星（不再是前二名各得）。并列第1则本赛段不发星 */
+  var top2=[rk[0].id];
   var got=[];
-  top2.forEach(function(id){
-    if(state.players[id].crowns<CROWN_MAX){ state.players[id].crowns++; got.push(ROSTER[id].name); }
-  });
+  var tieTop = rk.length>1 && rk[0].score===rk[1].score;
+  if(!tieTop && state.players[rk[0].id].crowns<CROWN_MAX){
+    state.players[rk[0].id].crowns++;           /* 星星 +1 */
+    got.push(ROSTER[rk[0].id].name);
+  }
   state.lastTop2=top2;
   state.settled=true;
   save();
