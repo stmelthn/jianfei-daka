@@ -1167,8 +1167,13 @@ function saveChallengeText(id){
   if(c.saved) c.revisions=(c.revisions||0)+1;
   c.text=t; c.saved=true;
   delete chalDraft[id];
+  var _needToken=!SYNC.token;
   save(); renderAll();
-  toast(c.revisions>=1?'✔ 挑战已保存并锁定（本期不能再改）':'✔ 挑战已保存（还能再改 1 次）');
+  if(_needToken){
+    toast('⚠ 挑战只存在本机！未连接云端 → 别人看不到。请到设置里粘 GitHub 令牌');
+  }else{
+    toast(c.revisions>=1?'✔ 挑战已保存并锁定（本期不能再改）':'✔ 挑战已保存（还能再改 1 次）');
+  }
 }
 function renderCounter(){
   var id=editId();
@@ -1227,6 +1232,7 @@ function renderCounter(){
   hint.classList.remove('hidden');
 }
 function renderAll(){
+  try{ renderTokenWarn(); }catch(e){}
   LAST_S=computeSettlement();
   renderHeader(); renderBoard(); renderChallenges(); renderCounter();
 }
@@ -1631,6 +1637,20 @@ function utf8Bytes(s){ try{ return unescape(encodeURIComponent(String(s))).lengt
 function two(n){ return (n<10?'0':'')+n; }
 
 /* ---------- 状态行 ---------- */
+function renderTokenWarn(){
+  var el=document.getElementById('tokenWarn');
+  if(!el){
+    el=document.createElement('div');
+    el.id='tokenWarn';
+    el.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9998;background:#C62828;color:#fff;'
+      +'padding:9px 12px;font-size:13px;font-weight:700;text-align:center;line-height:1.45;'
+      +'box-shadow:0 2px 8px rgba(0,0,0,.3);';
+    document.body.appendChild(el);
+  }
+  if(SYNC.token){ el.style.display='none'; return; }
+  el.style.display='block';
+  el.textContent='⚠ 未连接云端：你的打卡和挑战只存在本机，其他人看不到。请到「设置」粘贴 GitHub 令牌';
+}
 function syncRenderStatus(){
   var el=document.getElementById('syncStatus');
   if(!el) return;
@@ -2042,7 +2062,7 @@ function probePull(opt){
 /* ---------- 定时器 ---------- */
 function schedulePush(){
   if(SYNC.applying) return;
-  if(!SYNC.token){ syncRenderStatus(); return; }
+  if(!SYNC.token){ syncRenderStatus(); SYNC.needToken=true; renderTokenWarn(); return; }
   clearTimeout(SYNC.pushTimer);
   SYNC.pushTimer=setTimeout(function(){ doUpload({}); },SYNC.DEBOUNCE_MS);
 }
@@ -2087,6 +2107,7 @@ function bindSyncUI(){
     syncSetToken(v);
     if(ti) ti.value='';
     toast('钥匙已保存到本机');
+    try{ renderTokenWarn(); }catch(e){}
     schedulePoll();
     doPull({});
   };
