@@ -64,8 +64,9 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
 .topseason{flex:1;min-width:0;}
 .topseason .s1{font-size:17px;font-weight:900;color:var(--gold);letter-spacing:.5px;text-shadow:0 1px 0 #4a3200;}
 .topseason .s2{font-size:12.5px;color:#d8ece1;margin-top:2px;letter-spacing:.3px;}
-.gearbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:19px;flex:0 0 auto;}
+.gearbtn{width:50px;height:50px;min-width:50px;min-height:50px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:26px;flex:0 0 auto;border:2px solid rgba(255,255,255,.35);cursor:pointer;position:relative;z-index:20;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 
+.gearbtn::after{content:"";position:absolute;left:-8px;right:-8px;top:-8px;bottom:-8px;}
 .welrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 3px 7px;}
 .wel{color:#fff;font-size:17px;font-weight:900;letter-spacing:.5px;}
 .logoutbtn{padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font-size:12.5px;font-weight:800;}
@@ -350,11 +351,12 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
       <input type="date" id="setStart"/>
     </div>
 
-    <div class="setrow">
+    <div class="setrow" id="setRowToken" style="order:-99;">
       <label>☁ 数据同步（四人共享同一份数据）</label>
       <div class="note" style="margin-top:0;">粘一次 <b>GitHub 令牌</b>（Personal access token：经典令牌勾 <b>repo</b>；细粒度令牌给 <b>Contents: Read and write</b>）。令牌只存在<b>本机浏览器</b>里，<b>不会</b>写进仓库或页面源码。四个人、每台设备各粘一次即可。</div>
       <input type="password" id="setToken" autocomplete="off" spellcheck="false" placeholder="粘贴 GitHub 令牌（ghp_… / github_pat_…）"/>
       <div class="inline" style="margin-top:8px;">
+        <button class="btn-ghost" id="btnTokenPaste">📋 一键粘贴</button>
         <button class="btn-ghost" id="btnTokenSave">保存钥匙</button>
         <button class="btn-ghost" id="btnTokenClear">清除钥匙</button>
       </div>
@@ -1240,7 +1242,11 @@ function renderAll(){
 /* =========================================================
    8. 交互
    ========================================================= */
+var _lastToast='', _lastToastAt=0;
 function toast(msg){
+  var now=Date.now();
+  if(msg===_lastToast && now-_lastToastAt<2500) return;   /* 相同内容 2.5 秒内不重复弹 */
+  _lastToast=msg; _lastToastAt=now;
   var t=$('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(t._tm); t._tm=setTimeout(function(){ t.classList.remove('show'); },1800);
 }
@@ -1838,7 +1844,7 @@ function applyRemote(remote){
     save({quiet:true});
     if(state.currentUser&&ROSTER[state.currentUser]) showMain(); else showLogin();
     renderAll();
-    toast('已同步云端数据');
+    if(window.__manualPull){ toast('已同步云端数据'); window.__manualPull=false; }
     return true;
   }finally{ SYNC.applying=false; }
 }
@@ -1941,6 +1947,7 @@ function msgOf(p){ return 'jianfei sync '+(p&&p.compressed&&p.compressed.length?
 /* ---------- 拉取（云端更新才覆盖本地）---------- */
 function doPull(opt){
   opt=opt||{};
+  if(opt.manual) window.__manualPull=true;
   /* ★ 2026-10-19 修复：读云端不需要令牌（公开仓库 GET 免鉴权）。
      旧代码在这里无令牌直接 return，导致新设备永远是空白、分数显示 0。 */
   if(SYNC.pulling||SYNC.pushing) return Promise.resolve(false);
@@ -2110,6 +2117,16 @@ function bindSyncUI(){
     try{ renderTokenWarn(); }catch(e){}
     schedulePoll();
     doPull({});
+  };
+  var bp=document.getElementById('btnTokenPaste');
+  if(bp) bp.onclick=function(){
+    if(!navigator.clipboard||!navigator.clipboard.readText){ toast('浏览器不支持自动粘贴，请长按输入框手动粘贴'); return; }
+    navigator.clipboard.readText().then(function(txt){
+      txt=String(txt||'').trim();
+      if(!txt){ toast('剪贴板是空的'); return; }
+      if(ti) ti.value=txt;
+      toast('已粘贴，点「保存钥匙」生效');
+    },function(){ toast('读取剪贴板被拒绝，请长按输入框手动粘贴'); });
   };
   if(b2) b2.onclick=function(){ syncClearToken(); toast('已清除本机钥匙'); };
   if(b3) b3.onclick=function(){ clearTimeout(SYNC.pushTimer); doUpload({manual:true}); };
