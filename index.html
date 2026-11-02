@@ -438,6 +438,10 @@ var S1_HONORS={clm:{stars:3,level:'king'},
 /* ★★ S2 初始化标记：用于判断「是否需要彻底重置」。
    修改这个值 = 强制所有客户端重置（赛季切换时改一次即可） */
 var SEASON_INIT_TAG='s2-大水赛季_seg2_20261103';
+/* â 2026-11-02 ç¨æ·è¦æ±ï¼çå åªå°æåèµå­£ç»ç®æ¶æç¨äºç§°å·ã
+   æ¯ä¸ªèµæ®µä¼èåªè®°æï¼crowns ç´¯å ï¼ï¼ä¸åºç§°å·ï¼
+   èµå­£å¨é¨ç»ææ¶æä¸é¢æ¹æ trueï¼ç§°å·ï¼æ²³è´¼å¬/æ²³è´¼çï¼æçæ */
+var SEASON_FINAL=false;
 var TRIBUTE=6;                 /* 赛段进贡：后二名各出 6r → 第一名收 12r */
 var KING_FEE=0, DUKE_FEE=0;    /* ★ S2 取消赛季敬献（无 5r/10r） */
 var STORE_KEY='jianfei_score_v2';
@@ -813,6 +817,7 @@ function weighDays(id){
    ========================================================= */
 function crownsToLevel(c){ if(c>=3) return 'king'; if(c===2) return 'duke'; return null; }
 function curLevel(id){
+  if(!SEASON_FINAL) return null;   /* â èµæ®µä¸­ä¸åºç§°å·ï¼ç§°å·çå°èµå­£æ»ç»ç® */
   if(state.titleAuto) return crownsToLevel(state.players[id].crowns);
   if(state.segTitle.king===id) return 'king';
   if(state.segTitle.duke===id) return 'duke';
