@@ -294,13 +294,13 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
       <div class="grid2">
         <button class="btn-ghost btn-plus" id="btnMeal">＋ 喝够1.5L水（≥50%为热水）</button>
         <button class="btn-ghost btn-plus" id="btnWeigh">＋ 没喝含糖饮料</button>
-        <button class="btn-ghost btn-plus" id="btnExercise">＋ 吃饭</button>
+        <button class="btn-ghost btn-plus" id="btnExercise">＋ 健康吃饭</button>
         <button class="btn-ghost btn-plus" id="btnScale">＋ 上秤</button>
         <button class="btn-ghost btn-minus" id="btnUndo">－ 撤销</button>
         <button class="btn-ghost" id="btnClear" style="grid-column:1/-1;">清空本日</button>
       </div>
 
-      <div class="note">计分说明：日常分（每天上限 <b>6</b> 分＝<b>喝够1.5L水且饮水50%以上为热水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>吃饭每餐 +1（每天最多 3 分）</b> ＋ <b>上秤 +1</b>）＋ 挑战分（完成 <b>+12</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S2「大水赛季」。</div>
+      <div class="note">计分说明：日常分（每天上限 <b>6</b> 分＝<b>喝够1.5L水且饮水50%以上为热水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>健康吃饭每餐 +1（每天最多 3 分）</b> ＋ <b>上秤 +1</b>）＋ 挑战分（完成 <b>+12</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S2「大水赛季」。</div>
 
       <button class="btn-primary save" id="btnSave">保 存</button>
       <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
@@ -418,11 +418,11 @@ var SEASON='s2-大水赛季';
 var SEG_NO=2;                                  /* ←★ S2 第 2 赛段 */
 var INIT_CROWNS={clm:1, lmh:1, gd:0, hyt:0};   /* ★ 赛段2 初始星数：赛段1 蛋蛋(clm)、西瓜(lmh) 并列第一各得 1 星 */
 var INIT_KNIVES={hyt:1, gd:0, clm:0, lmh:0};
-/* ★★ S2 赛段2 计分：每日上限 6 分（喝水1 + 控糖1 + 吃饭3 + 上秤1）
+/* ★★ S2 赛段2 计分：每日上限 6 分（喝水1 + 控糖1 + 健康吃饭3 + 上秤1）
    字段名沿用 meals/weigh/exercise 并新增 scale，只改语义，保证云端数据与旧代码兼容：
      meals    → 喝够1.5L水且饮水50%以上为热水（两条件同时满足才计分）  +1（每天上限 1）
      weigh    → 没喝含糖饮料（控糖）    +1（每天上限 1）
-     exercise → 吃饭                    +1/餐（每天上限 3）
+     exercise → 健康吃饭                    +1/餐（每天上限 3）
      scale    → 上秤                    +1（每天上限 1） */
 var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=3, MAX_SCALE=1, DAY_CAP=6, CHALLENGE_PTS=12;
 /* ★★ S2 参赛者：3 人。芋头(hyt) 可玩可打卡，但不进排名、不参与结算 */
@@ -767,10 +767,10 @@ function getDay(id,d){
 function dayScore(id,d){
   var dt=state.players[id].days[d];
   if(!dt) return 0;
-  /* ★ S2 赛段2：喝水(喝够1.5L 且 ≥50%为热水) / 控糖 / 吃饭 / 上秤，每日上限 6 分（1+1+3+1） */
+  /* ★ S2 赛段2：喝水(喝够1.5L 且 ≥50%为热水) / 控糖 / 健康吃饭 / 上秤，每日上限 6 分（1+1+3+1） */
   var m=Math.min(dt.meals||0,MAX_MEALS);      /* 喝够 1.5L 水 且 饮水≥50% 为热水（不满足不计分） */
   var w=Math.min(dt.weigh||0,MAX_WEIGH);      /* 没喝含糖饮料（控糖） */
-  var e=Math.min(dt.exercise||0,MAX_EXERCISE);/* 吃饭：每餐 +1，每天最多 3 分 */
+  var e=Math.min(dt.exercise||0,MAX_EXERCISE);/* 健康吃饭：每餐 +1，每天最多 3 分 */
   var s=Math.min(dt.scale||0,MAX_SCALE);      /* 上秤：每天 +1 */
   return m+w+e+s;
 }
@@ -803,7 +803,7 @@ function daysChecked(id){
 }
 function fullMealDays(id){
   var n=0;
-  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&(dt.exercise||0)>=MAX_EXERCISE) n++; }   /* ★ 三餐全勤 = 吃饭满 3 餐（原先误用喝水字段） */
+  for(var d=1;d<=SEGMENT_DAYS;d++){ var dt=state.players[id].days[d]; if(dt&&(dt.exercise||0)>=MAX_EXERCISE) n++; }   /* ★ 三餐全勤 = 健康吃饭满 3 餐（原先误用喝水字段） */
   return n;
 }
 function weighDays(id){
@@ -988,7 +988,7 @@ function computeSettlement(){
 var S2_ITEMS={
   meals:{name:'喝够1.5L水·≥50%热水', icon:'💧', tip:'今天喝够 1500ml 水，且其中一半以上是热水，才计 1 分'},
   weigh:{name:'没喝含糖饮料', icon:'🚫', tip:'今天没喝奶茶/可乐等含糖饮料'},
-  exercise:{name:'吃饭', icon:'🍚', tip:'今天按时吃饭（每餐 +1，每天最多 3 分）'},
+  exercise:{name:'健康吃饭', icon:'🍚', tip:'今天按时健康吃饭（每餐 +1，每天最多 3 分）'},
   scale:{name:'上秤', icon:'⚖️', tip:'今天上秤记录体重'}
 };
 var POOL={
@@ -1102,7 +1102,7 @@ function renderBoard(){
       '<span class="avwrap"><span class="av">'+avatarInner(r.id)+'</span>'+s1HonorHTML(r.id)+'</span>'+
       '<span class="nmc"><span class="nm">'+ROSTER[r.id].name+'</span></span>'+
       '<span class="pt">'+r.score+'</span>';
-    li.title=ROSTER[r.id].name+'：日常分（喝水＋控糖＋吃饭＋上秤）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score+'\nS1 荣誉：'+(S1_HONORS[r.id]&&S1_HONORS[r.id].stars?S1_HONORS[r.id].stars+' 星':"无");
+    li.title=ROSTER[r.id].name+'：日常分（喝水＋控糖＋健康吃饭＋上秤）'+dailyScore(r.id)+' ＋ 挑战分 '+challengePts(r.id)+' ＝ '+r.score+'\nS1 荣誉：'+(S1_HONORS[r.id]&&S1_HONORS[r.id].stars?S1_HONORS[r.id].stars+' 星':"无");
     ul.appendChild(li); rank++;
   });
   renderBoardChal();
@@ -1195,7 +1195,7 @@ function renderCounter(){
   var mc=Math.min(m,MAX_MEALS), wc=Math.min(w,MAX_WEIGH), ec=Math.min(e,MAX_EXERCISE), scc=Math.min(sc,MAX_SCALE);
   var mealFull=(m>=MAX_MEALS);          /* ★ 喝水每天 1 分（需同时满足：喝够1.5L＋饮水≥50%为热水） */
   var wFull=(w>=MAX_WEIGH);             /* ★ S2：无糖每天 1 次 */
-  var exFull=(e>=MAX_EXERCISE);         /* ★ 吃饭满 3 次 → 锁住（每天最多 3 分） */
+  var exFull=(e>=MAX_EXERCISE);         /* ★ 健康吃饭满 3 次 → 锁住（每天最多 3 分） */
   var scFull=(sc>=MAX_SCALE);           /* ★ 上秤：每天 1 次 */
   var overWeigh=(w>MAX_WEIGH);
 
@@ -1209,12 +1209,12 @@ function renderCounter(){
   var dscore=dailyScore(id), cpts=challengePts(id);
   $('counterStat').innerHTML=
     '第 '+d+' 天：💧喝够1.5L水 '+m+'/'+MAX_MEALS+' <span class="cap">（计 '+mc+' 分'+(mealFull?' · 已满':'')+'）</span> · 🚫没喝含糖饮料 '+w+'/'+MAX_WEIGH+' <span class="cap">（计 '+wc+' 分'+(wFull?' · 已满':'')+'）</span><br/>'+
-    '🍚吃饭 '+e+'/'+MAX_EXERCISE+' <span class="cap">（计 '+ec+' 分'+(exFull?' · 已满':'')+'）</span> · ⚖️上秤 '+sc+'/'+MAX_SCALE+' <span class="cap">（计 '+scc+' 分'+(scFull?' · 已满':'')+'）</span><br/>'+
-    '本日得分 <b>'+(mc+wc+ec+scc)+'</b> / '+DAY_CAP+' 分（喝水 '+mc+' + 控糖 '+wc+' + 吃饭 '+ec+' + 上秤 '+scc+'） &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
+    '🍚健康吃饭 '+e+'/'+MAX_EXERCISE+' <span class="cap">（计 '+ec+' 分'+(exFull?' · 已满':'')+'）</span> · ⚖️上秤 '+sc+'/'+MAX_SCALE+' <span class="cap">（计 '+scc+' 分'+(scFull?' · 已满':'')+'）</span><br/>'+
+    '本日得分 <b>'+(mc+wc+ec+scc)+'</b> / '+DAY_CAP+' 分（喝水 '+mc+' + 控糖 '+wc+' + 健康吃饭 '+ec+' + 上秤 '+scc+'） &nbsp;·&nbsp; 赛段总分 <b>'+totalScore(id)+'</b> 分 '+
     '<span class="cap">（日常 '+dscore+' ＋ 挑战 '+cpts+'）</span>'+
-    '<br/><span class="cap">喝水计分口径：喝够1.5L 且 饮水≥50%为热水（两条件同时满足才计 1 分，只喝够水不计分）· 控糖 1 分 · 吃饭每餐 1 分（每天最多 3 分）· 上秤 1 分，合计每日上限 '+DAY_CAP+' 分</span>'+
+    '<br/><span class="cap">喝水计分口径：喝够1.5L 且 饮水≥50%为热水（两条件同时满足才计 1 分，只喝够水不计分）· 控糖 1 分 · 健康吃饭每餐 1 分（每天最多 3 分）· 上秤 1 分，合计每日上限 '+DAY_CAP+' 分</span>'+
     (mealFull?'<br/><span class="cap">💧喝水 ✅ 已记（按“喝够1.5L 且 ≥50% 为热水”计 1 分）</span>':'')+
-    (exFull?'<br/><span class="cap">🍚吃饭 '+MAX_EXERCISE+'/'+MAX_EXERCISE+' 已满（每天最多 3 分）</span>':'')+
+    (exFull?'<br/><span class="cap">🍚健康吃饭 '+MAX_EXERCISE+'/'+MAX_EXERCISE+' 已满（每天最多 3 分）</span>':'')+
     '';
     '';
 
@@ -1233,7 +1233,7 @@ function renderCounter(){
   var open=scoringOpen();
   $('btnMeal').disabled=!open||mealFull;    /* ★ 喝水：每天 1 分（喝够1.5L 且 ≥50% 为热水） */
   $('btnWeigh').disabled=!open||wFull;      /* ★ 没喝含糖饮料：每天 1 次 */
-  $('btnExercise').disabled=!open||exFull;  /* ★ 吃饭：每天最多 3 次 */
+  $('btnExercise').disabled=!open||exFull;  /* ★ 健康吃饭：每天最多 3 次 */
   $('btnScale').disabled=!open||scFull;     /* ★ 上秤：每天 1 次 */
   $('btnUndo').disabled=!open;
   $('btnClear').disabled=!open;
@@ -1281,11 +1281,11 @@ function addWeigh(){
   undoStack.push({id:id,day:d,field:'weigh',delta:dt.weigh-before});
   save(); renderAll();
 }
-function addExercise(){                   /* ★ 吃饭：每天最多 3 次，1 次 = 1 分 */
+function addExercise(){                   /* ★ 健康吃饭：每天最多 3 次，1 次 = 1 分 */
   if(!scoringOpen()) return;
   var id=editId(), d=currentDay(), dt=getDay(id,d);
   var before=(dt.exercise||0);
-  if(before>=MAX_EXERCISE){ toast("吃饭今天已记满（每天最多 "+MAX_EXERCISE+" 餐）"); return; }   /* ★ 锁 3 次 */
+  if(before>=MAX_EXERCISE){ toast("健康吃饭今天已记满（每天最多 "+MAX_EXERCISE+" 餐）"); return; }   /* ★ 锁 3 次 */
   dt.exercise=Math.min(before+1,MAX_EXERCISE);
   undoStack.push({id:id,day:d,field:'exercise',delta:dt.exercise-before});
   save(); renderAll();
