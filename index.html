@@ -300,7 +300,7 @@ header.topbar{color:#fff;padding:2px 2px 6px;display:flex;align-items:flex-start
         <button class="btn-ghost" id="btnClear" style="grid-column:1/-1;">清空本日</button>
       </div>
 
-      <div class="note">计分说明：日常分（每天上限 <b>6</b> 分＝<b>喝够2L水且饮水50%以上为热水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>健康吃饭每餐 +1（每天最多 3 分）</b> ＋ <b>上秤 +1</b>）＋ 挑战分（完成 <b>+12</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S3「大水赛季」。</div>
+      <div class="note">计分说明：日常分（每天上限 <b>6</b> 分＝<b>喝够2L水且饮水50%以上为热水 +1</b> ＋ <b>没喝含糖饮料 +1</b> ＋ <b>健康吃饭每餐 +1（每天最多 3 分）</b> ＋ <b>上秤 +1</b>）＋ 挑战分（完成 <b>+12</b>，不占每日上限）＝ 该赛段总分。<br/>结算：本赛段第 2、3 名各向第 1 名进贡 <b>6r</b>（合计 12r）。本季为 S3「大水赛季」，4 人同场（含芋头）；<b>仅按赛段结算进贡（第 2–4 名各出 6r → 第 1 名收 18r）</b>，<b>本季不设赛季总结算</b>。</div>
 
       <button class="btn-primary save" id="btnSave">保 存</button>
       <button class="btn-primary" id="btnSettle" style="margin-top:8px;">结 算</button>
@@ -425,8 +425,9 @@ var INIT_KNIVES={hyt:0, gd:0, clm:0, lmh:0};
      exercise → 健康吃饭                    +1/餐（每天上限 3）
      scale    → 上秤                    +1（每天上限 1） */
 var MAX_MEALS=1, MAX_WEIGH=1, MAX_EXERCISE=3, MAX_SCALE=1, DAY_CAP=6, CHALLENGE_PTS=12;
-/* ★★ S2 参赛者：3 人。芋头(hyt) 可玩可打卡，但不进排名、不参与结算 */
-var PARTICIPANTS=['gd','clm','lmh'];
+/* ★★ S3 参赛者：4 人。芋头(hyt) 本季参与【赛段】排名与进贡结算，
+   但不参与【赛季】结算（本季另定：不设赛季总结算，仅按赛段结算） */
+var PARTICIPANTS=['gd','clm','lmh','hyt'];
 /* ★★ S1 荣誉存档（只作头像展示，不参与 S2 任何计分/结算）
    星星体系：1赛段冠军=1星；2星=小王(小王冠)；3星=大王(大王冠)；不足2星=平民(无冠)
    S1 最终星数：蛋蛋(clm)=3星→大王　栋栋(gd)=2星→小王
@@ -785,7 +786,7 @@ function dailyScore(id){
 }
 function totalScore(id){ return dailyScore(id)+challengePts(id); }
 function ranking(){
-  /* ★ S2：只排参赛者（芋头可玩但不进排名） */
+  /* ★ S3：只排参赛者（本季 4 人，含芋头） */
   var r=PARTICIPANTS.map(function(id){ return {id:id,score:totalScore(id)}; });
   r.sort(function(a,b){ return (b.score-a.score)||(PARTICIPANTS.indexOf(a.id)-PARTICIPANTS.indexOf(b.id)); });
   return r;
